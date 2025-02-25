@@ -4,7 +4,7 @@ import json
 from typing import Optional, List
 from pydantic import BaseModel
 from openai import OpenAI
-from utility.utility import MODEL, LLM_RETRY
+from utility.utility import MODEL, LLM_RETRY, LLM_RESULT_DIR
 
 PROTOCOL_SPECIALIZED_STRUCTURE_OUTPUT_DIR = "protocol_specialized_structure_results"
 
@@ -102,5 +102,11 @@ def get_specialized_structures(protocol: str, base_template: dict, message_types
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(structures, f, indent=4, ensure_ascii=False)    
     print(f"Saved results for {protocol} to {file_path}")
+
+    # Save the prompt and response to a text file
+    os.makedirs(LLM_RESULT_DIR, exist_ok=True)
+    protocol_file = os.path.join(LLM_RESULT_DIR, f"3_{protocol.lower()}_specialized_structures.json")
+    with open(protocol_file, "w", encoding="utf-8") as f:
+        json.dump(structures, f, indent=4, ensure_ascii=False)
 
     return structures

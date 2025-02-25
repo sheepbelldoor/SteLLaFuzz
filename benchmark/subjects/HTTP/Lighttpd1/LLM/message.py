@@ -4,7 +4,7 @@ import json
 from typing import Optional, List
 from pydantic import BaseModel
 from openai import OpenAI
-from utility.utility import MODEL, LLM_RETRY
+from utility.utility import MODEL, LLM_RETRY, LLM_RESULT_DIR
 
 MESSAGE_OUTPUT_DIR = "message_results"
 
@@ -130,5 +130,10 @@ def get_messages(protocol: str, specialized_structure: dict) -> None:
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(messages, f, indent=4, ensure_ascii=False)    
     print(f"Saved results for {protocol} to {file_path}")
+
+    os.makedirs(LLM_RESULT_DIR, exist_ok=True)
+    file_path = os.path.join(LLM_RESULT_DIR, f"4_{protocol.lower()}_messages.json")
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(messages, f, indent=4, ensure_ascii=False)   
 
     return messages

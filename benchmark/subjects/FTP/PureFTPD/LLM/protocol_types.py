@@ -4,7 +4,7 @@ import json
 from typing import Optional, List
 from pydantic import BaseModel
 from openai import OpenAI
-from utility.utility import MODEL, LLM_RETRY
+from utility.utility import MODEL, LLM_RETRY, LLM_RESULT_DIR
 
 PROTOCOL_TYPE_OUTPUT_DIR = "protocol_type_results"
 
@@ -71,6 +71,13 @@ def get_protocol_message_types(protocol: str) -> dict:
     # Save the individual protocol result to a JSON file
     os.makedirs(PROTOCOL_TYPE_OUTPUT_DIR, exist_ok=True)    
     protocol_file = os.path.join(PROTOCOL_TYPE_OUTPUT_DIR, f"{protocol.lower()}_types.json")
+    with open(protocol_file, "w", encoding="utf-8") as f:
+        json.dump(response.model_dump(), f, indent=4, ensure_ascii=False)
+    print(f"Saved results for {protocol} to {protocol_file}")
+
+    # Save the individual protocol result to a JSON file
+    os.makedirs(LLM_RESULT_DIR, exist_ok=True)    
+    protocol_file = os.path.join(LLM_RESULT_DIR, f"2_{protocol.lower()}_types.json")
     with open(protocol_file, "w", encoding="utf-8") as f:
         json.dump(response.model_dump(), f, indent=4, ensure_ascii=False)
     print(f"Saved results for {protocol} to {protocol_file}")

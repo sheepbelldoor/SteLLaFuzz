@@ -72,7 +72,12 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   cd $WORKDIR/forked-daapd-gcov
   gcovr -r . --html --html-details -o index.html
   mkdir ${WORKDIR}/${OUTDIR}/cov_html/
-  cp *.html ${WORKDIR}/${OUTDIR}/cov_html/
+  cp *.html ${WORKDIR}/${OUTDIR}/cov_html/.
+
+  if [ $FUZZER = "snetgen" ]; then
+    cp -r ${WORKDIR}/in-daap ${WORKDIR}/${OUTDIR}/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/
+  fi
 
   #Step-3. Save the result to the ${WORKDIR} folder
   #Tar all results to a file

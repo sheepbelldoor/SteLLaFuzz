@@ -4,7 +4,7 @@ import json
 from typing import Optional, List
 from pydantic import BaseModel
 from openai import OpenAI
-from utility.utility import MODEL, LLM_RETRY
+from utility.utility import MODEL, LLM_RETRY, LLM_RESULT_DIR
 
 BASIC_PROTOCOL_TEMPLATE_OUTPUT_DIR = "basic_protocol_template_results"
 
@@ -80,5 +80,11 @@ def get_basic_protocol_template(protocol: str) -> dict:
     with open(protocol_file, "w", encoding="utf-8") as f:
         json.dump(response.model_dump(), f, indent=4, ensure_ascii=False)
     print(f"Saved results for {protocol} to {protocol_file}")
+
+    # Save the prompt and response to a text file
+    os.makedirs(LLM_RESULT_DIR, exist_ok=True)
+    protocol_file = os.path.join(LLM_RESULT_DIR, f"1_{protocol.lower()}_template.json")
+    with open(protocol_file, "w", encoding="utf-8") as f:
+        json.dump(response.model_dump(), f, indent=4, ensure_ascii=False)
 
     return response.model_dump()

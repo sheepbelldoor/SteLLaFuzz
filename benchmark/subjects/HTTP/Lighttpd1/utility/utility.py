@@ -5,6 +5,7 @@ import random
 from pprint import pprint
 
 MODEL = "gpt-4o-mini"
+LLM_RESULT_DIR = "llm_outputs"
 SEQUENCE_REPEAT = 10
 LLM_RETRY = 3
 

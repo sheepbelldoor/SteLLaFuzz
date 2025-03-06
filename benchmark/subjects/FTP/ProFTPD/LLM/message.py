@@ -8,15 +8,20 @@ from utility.utility import MODEL, LLM_RETRY, LLM_RESULT_DIR
 
 MESSAGE_OUTPUT_DIR = "message_results"
 
-class GeneratedField(BaseModel):
-    name: str                         # 예: [STRUCTURE.specialized_structure.fields.name]
-    value: Optional[str] = None       # 해당 필드의 생성된 값 (예: "Generated value for this field")
-    is_binary: bool                   # 해당 필드가 이진 데이터인지 여부
-    # children: Optional[List["GeneratedField"]] = None  # 재귀적 하위 필드
+# class GeneratedField(BaseModel):
+#     name: str                         # 예: [STRUCTURE.specialized_structure.fields.name]
+#     value: Optional[str] = None       # 해당 필드의 생성된 값 (예: "Generated value for this field")
+#     is_binary: bool                   # 해당 필드가 이진 데이터인지 여부
+#     # children: Optional[List["GeneratedField"]] = None  # 재귀적 하위 필드
+
+# class GeneratedMessage(BaseModel):
+#     description: str                  # 메시지의 상태나 시나리오 설명
+    # payload: List[GeneratedField]     # 재귀적 구조의 최상위 필드 목록
 
 class GeneratedMessage(BaseModel):
     description: str                  # 메시지의 상태나 시나리오 설명
-    payload: List[GeneratedField]     # 재귀적 구조의 최상위 필드 목록
+    message: str
+    is_binary: bool                   # 해당 필드가 이진 데이터인지 여부
 
 class ProtocolGeneratedMessage(BaseModel):
     message_type: str                 # 예: [STRUCTURE.message_type]
@@ -55,13 +60,8 @@ You are a [PROTOCOL] network protocol expert tasked with generating valid messag
         "message_type": "[STRUCTURE.message_type]",
         "generated_message": {
             "description": "A brief description of the scenario or state covered by this message",
-            "payload": [
-                {
-                    "name": "[STRUCTURE.specialized_structure.fields.name]",
-                    "value": "Generated value for this field"
-                }
-                // Additional fields as specified by the structure
-            ]
+            "message": "Generated message in hex format or plain text format",
+            "is_binary": true or false (if the message is binary data)
         }
     }
 
@@ -69,15 +69,19 @@ You are a [PROTOCOL] network protocol expert tasked with generating valid messag
    - Internally, use a chain-of-thought reasoning process to ensure that each fixed and variable field is correctly generated and that the overall message is valid.
    - Do not include the internal reasoning in the final JSON output.
 
+6. **Caution**
+   - Each message may include spaces or newlines if necessary. In this case, it must be clearly indicated.
+
 Please generate multiple valid messages for [STRUCTURE.message_type] based on the above requirements and constraints.
 """
+
 
 def using_llm(prompt: str) -> ProtocolGeneratedMessage:
     client = OpenAI()
     try:
         completion = client.beta.chat.completions.parse(
             model=MODEL,
-            temperature=0.1,
+            # temperature=0.1,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}

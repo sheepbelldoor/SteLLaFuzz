@@ -10,32 +10,79 @@ PROTOCOL_TYPE_OUTPUT_DIR = "protocol_type_results"
 
 class MessageType(BaseModel):
     name: str                               # Message type name (e.g., DISCONNECT, KEXINIT)
+    code: Optional[str] = None              # Code of the message type
     description: str                        # Brief description of the message type
 
 class ProtocolMessageTypes(BaseModel):
-    protocol: str                           # Protocol name (e.g., SSH, HTTP)
-    message_types: List[MessageType]        # List of all message types in the protocol
-    references: Optional[List[str]] = None  # List of official documents or RFCs
-    notes: Optional[str] = None             # Considerations for future extensibility or additional notes
+    protocol: str                                               # Protocol name (e.g., SSH, HTTP)
+    client_to_server_messages: List[MessageType]                # List of all message types in the protocol
+    potential_candidates: Optional[List[MessageType]] = None    # List of potential candidates for message types
+    references: Optional[List[str]] = None                      # List of official documents or RFCs
+    notes: Optional[str] = None                                 # Considerations for future extensibility or additional notes
 
 PROTOCOL_TYPE_PROMPT = """\
-You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to extract all defined client-to-server message types in the [PROTOCOL] protocol. For example, in the SSH protocol, client-to-server message types may include KEXINIT, SERVICE_REQUEST, USERAUTH_REQUEST, etc. It is critical that no valid client-to-server message type is omitted.
+You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to extract all defined client-to-server message types in the [PROTOCOL] protocol.
 
 Please adhere to the following instructions:
 
 1. **Identify All Client-to-Server Message Types:**
-   - List every client-to-server message type defined in the [PROTOCOL] protocol exactly as specified in the official documentation, RFCs, or other verified sources.
-   - Ensure that no valid client-to-server message type is missing from your answer.
+   - List every client-to-server message type defined in the [PROTOCOL] protocol exactly as specified in the official documentation, RFCs, or other recognized authoritative sources.
+   - The list must be exhaustive. Ensure that no valid client-to-server message type is missing.
+   - If the protocol documentation provides message codes or numeric values alongside the message types, include them. This is not server response code.
+   - Present your answer in a structured format (e.g., a JSON array or a table) to ensure clarity and completeness.
+   - If applicable, sort the list in alphabetical order or according to the order specified in the official documentation.
+   - Message types sent from the server to the client are not extracted.
+   - **Example:**  
+     For SSH, an acceptable output would be:  
+     ```json
+     {
+       "protocol": "SSH",
+       "client_to_server_messages": [
+         {"name": "KEXINIT", "code": "20", "description": Description of KEXINIT including its purpose, and usage},
+         {"name": "SERVICE_REQUEST", "code": "5", "description": Description of SERVICE_REQUEST including its purpose, and usage},
+         {"name": "USERAUTH_REQUEST", "code": "50", "description": Description of USERAUTH_REQUEST including its purpose, and usage}
+         // ... include other message types as defined in the official documentation.
+       ]
+     }
+     ```
 
-2. **Source-Based and Accurate:**
-   - Base your response strictly on reliable, official documentation or recognized sources.
+2. **Authoritative and Accurate:**
+   - Base your response strictly on official documentation, RFCs, or other recognized authoritative sources.
+   - Provide references (e.g., document names, URLs) for the sources you consulted.
    - Avoid any subjective interpretation or hallucinated information.
+   - **Example:**  
+     In your response, include a section like:  
+     ```plaintext
+     Sources:
+     - RFC 4253 (SSH Transport Layer Protocol): https://tools.ietf.org/html/rfc4253
+     - Official [PROTOCOL] documentation: [Insert URL here]
+     ```
 
 3. **Step-by-Step Reasoning:**
-   - Provide a brief explanation of the process used to derive the list of client-to-server message types.
-   - Indicate how you ensured the completeness and correctness of the list.
+   - Detail the process you used to derive the list of client-to-server message types.
+   - Explain which official documents or RFCs you consulted and how you verified that the list is complete.
+   - If there are ambiguous or unclear parts in the documentation, describe how you addressed them and note any potential uncertainties.
+   - **Example:**  
+     Include a reasoning section such as:  
+     ```plaintext
+     Reasoning Process:
+     - Step 1: Reviewed the official [PROTOCOL] documentation to identify the message types.
+     - Step 2: Cross-referenced with RFC [Number] to ensure all client-to-server message types were included.
+     - Step 3: Noted that certain message types had ambiguous definitions; these are marked in the "Potential Candidates" section.
+     ```
 
-Please extract and list all client-to-server message types for [PROTOCOL] following the above constraints.
+4. **Error Handling and Completeness:**
+   - If certain message types are not clearly defined in the official sources, include a note on these uncertainties and list any potential candidates in a separate section (e.g., "Potential Candidates").
+   - Cross-check multiple official sources to confirm the completeness of the list.
+   - **Example:**  
+     Add a section for ambiguous or uncertain message types, for example:  
+     ```plaintext
+     Potential Candidates:
+     - [TYPE_X]: Defined in some unofficial documentation but not clearly specified in the official sources.
+     - [TYPE_Y]: Might be part of an extended version of the protocol.
+     ```
+
+Please extract and list all client-to-server message types for [PROTOCOL] following the above constraints and examples.
 """
 
 def using_llm(prompt: str) -> ProtocolMessageTypes:
@@ -49,7 +96,7 @@ def using_llm(prompt: str) -> ProtocolMessageTypes:
                 {"role": "user", "content": prompt}
             ],
             response_format=ProtocolMessageTypes,
-            timeout=15
+            timeout=90
         )
         response = completion.choices[0].message.parsed
         return response
@@ -77,9 +124,8 @@ def get_protocol_message_types(protocol: str) -> dict:
 
     # Save the individual protocol result to a JSON file
     os.makedirs(LLM_RESULT_DIR, exist_ok=True)    
-    protocol_file = os.path.join(LLM_RESULT_DIR, f"2_{protocol.lower()}_types.json")
+    protocol_file = os.path.join(LLM_RESULT_DIR, f"1_{protocol.lower()}_types.json")
     with open(protocol_file, "w", encoding="utf-8") as f:
         json.dump(response.model_dump(), f, indent=4, ensure_ascii=False)
-    print(f"Saved results for {protocol} to {protocol_file}")
 
     return response.model_dump()

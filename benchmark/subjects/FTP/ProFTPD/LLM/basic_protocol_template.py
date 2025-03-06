@@ -49,13 +49,13 @@ def using_llm(prompt: str) -> ProtocolTemplate:
     try:
         completion = client.beta.chat.completions.parse(
             model=MODEL,
-            temperature=0.1,
+            # temperature=0.1,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
             ],
             response_format=ProtocolTemplate,
-            timeout=15
+            timeout=90
         )
         response = completion.choices[0].message.parsed
         return response

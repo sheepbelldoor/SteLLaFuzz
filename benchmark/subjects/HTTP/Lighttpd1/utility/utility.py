@@ -6,7 +6,8 @@ from pprint import pprint
 
 MODEL = "gpt-4o-mini"
 LLM_RESULT_DIR = "llm_outputs"
-SEQUENCE_REPEAT = 10
+TEST_MESSAGE_DIR = os.path.join(LLM_RESULT_DIR, "messages")
+SEQUENCE_REPEAT = 5
 LLM_RETRY = 3
 
 def hex_to_bytearray(hex_string: str) -> str:
@@ -49,25 +50,21 @@ def get_message_random(message: dict) -> bytearray:
     selected_message = random.choice(message["generated_message"])
     message = bytearray()
 
-    is_text_based = check_all_fields_non_binary(selected_message["payload"])
-    for field in selected_message["payload"]:
-        if field["value"] is None:
-            continue
-        
-        # All fields are non-binary (Text-based)
-        if is_text_based:
-            message.extend(field["value"].encode())
-            message.extend(b'\r\n')
+    is_text_based = not selected_message["is_binary"]
+
+    # Process the message string directly
+    if is_text_based:
+        if not (selected_message['message'].endswith('\r\n') or selected_message['message'].endswith('\n')):
+            message.extend(f"{selected_message['message']}\r\n".encode())
         else:
-            # All fields are binary (Binary-based)            
-            if field["is_binary"]:
-                binary_string = hex_to_bytearray(field["value"])
-                message.extend(binary_string)
-            else:
-                message.extend(field["value"].encode())
-                message.extend(b' ')
+            message.extend(selected_message['message'].encode())
+    else:
+        # If it were binary, you would handle it differently
+        # Assuming you have a way to convert the string to binary if needed
+        binary_string = hex_to_bytearray(selected_message["message"])  # Example, adjust as needed
+        message.extend(binary_string)
     
-    message.extend(b'\r\n')
+    # message.extend(b'\r\n')
     return message
 
 def generate_test_cases(protocol: str, message_types: dict, _message_sequences: dict) -> None:
@@ -95,12 +92,59 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
         test_cases (dict): Dictionary containing test messages (bytearray)
         output_dir (str): Directory to save the files
     """
+    concatnated_messages = bytearray()
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
-    
-    for idx, message in test_cases.items():
+
+    for idx, testcase in enumerate(test_cases.values(), 1):
+        for sequence in testcase["sequences"]:
+            for message in sequence["messages"]:
+                if message["is_binary"]:
+                    # have to convert hex to binary
+                    concatnated_messages += hex_to_bytearray(message["message"]) + b"\r\n"
+                else:
+                    concatnated_messages += message["message"].encode() + b"\r\n"
+
         file_path = os.path.join(output_dir, f"new_{idx}.raw")
-        
-        # Write binary data
-        with open(file_path, 'wb') as f:
-            f.write(message)
+        with open(file_path, "wb") as f:
+            f.write(concatnated_messages)
+
+def save_messages(messages: dict) -> None:
+    """Save individual messages to separate files.
+    
+    Args:
+        messages (dict): Dictionary containing message types and their generated messages
+    """
+    os.makedirs(TEST_MESSAGE_DIR, exist_ok=True)
+    
+    for message_type, message_data in messages.items():
+        for idx, generated_msg in enumerate(message_data["generated_message"], 1):
+            # print(f"Debug: generated_msg = {generated_msg}")  # Debugging line
+            
+            if isinstance(generated_msg, str):
+                print(f"Error: generated_msg is a string, expected a dictionary. Value: {generated_msg}")
+                continue  # Skip this iteration if it's a string
+            
+            message = bytearray()
+            
+            # Check if the message is text-based
+            is_text_based = not generated_msg["is_binary"]  # Use is_binary directly
+            
+            # Process the message string directly
+            if is_text_based:
+                if not (generated_msg['message'].endswith('\r\n') or generated_msg['message'].endswith('\n')):
+                    message.extend(f"{generated_msg['message']}\r\n".encode())
+                else:
+                    message.extend(generated_msg['message'].encode())
+            else:
+                # If it were binary, you would handle it differently
+                # Assuming you have a way to convert the string to binary if needed
+                binary_string = hex_to_bytearray(generated_msg["message"])  # Example, adjust as needed
+                message.extend(binary_string)
+            
+            # message.extend(b'\r\n')
+            
+            # Save individual message to file with message type in filename
+            file_path = os.path.join(TEST_MESSAGE_DIR, f"{message_type}_{idx}.raw")
+            with open(file_path, "wb") as f:
+                f.write(message)

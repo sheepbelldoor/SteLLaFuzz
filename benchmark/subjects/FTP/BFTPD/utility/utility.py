@@ -96,7 +96,9 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
 
-    for idx, testcase in enumerate(test_cases.values(), 1):
+    idx = 1
+
+    for testcase in test_cases.values():
         for sequence in testcase["sequences"]:
             for message in sequence["messages"]:
                 if message["is_binary"]:
@@ -105,11 +107,12 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
                 else:
                     concatnated_messages += message["message"].encode() + b"\r\n"
 
-        file_path = os.path.join(output_dir, f"new_{idx}.raw")
-        with open(file_path, "wb") as f:
-            f.write(concatnated_messages)
-        concatnated_messages = bytearray()
-
+            file_path = os.path.join(output_dir, f"new_{idx}.raw")
+            with open(file_path, "wb") as f:
+                f.write(concatnated_messages)
+            concatnated_messages = bytearray()
+            idx += 1
+            
 def save_messages(messages: dict) -> None:
     """Save individual messages to separate files.
     

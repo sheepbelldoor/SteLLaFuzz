@@ -30,6 +30,7 @@ This message structure must include:
 - A comprehensive list of all fields (including any common headers, body elements, and subfields) as defined in the official documentation, RFCs, or other recognized authoritative sources.
 - For each field, include:
   - "name": The field name as specified in the documentation.
+  - "fixed_byte_length": The fixed byte length of the field. if the field is variable, set this to null.
   - "data_type": The type of data (e.g., string, int, bytes, boolean, etc.).
   - "description": A brief description of the field and its purpose.
   - "details": Any additional information such as length, encoding, or constraints, if applicable.
@@ -51,6 +52,7 @@ Please adhere to the following instructions:
 3. **Specify Field Details:**
    - For each field in the "fields" array, provide:
      - "name": the exact field name.
+     - "fixed_byte_length": The fixed byte length of the field. if the field is variable, set this to null.
      - "data_type": the field's data type (e.g., string, int, bytes, boolean, etc.).
      - "description": a brief explanation of the field.
      - "details": any additional details (such as length, encoding, constraints).

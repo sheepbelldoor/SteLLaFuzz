@@ -21,13 +21,13 @@ class ProtocolMessageTypes(BaseModel):
     notes: Optional[str] = None                                 # Considerations for future extensibility or additional notes
 
 PROTOCOL_TYPE_PROMPT = """\
-You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to extract all defined client-to-server message types in the [PROTOCOL] protocol.
+You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to extract all defined client-to-server message types in the [PROTOCOL] protocol, including any extended or optional commands as defined in official documentation or recognized RFC extensions.
 
 Please adhere to the following instructions:
 
-1. **Identify All Client-to-Server Message Types:**
+1. **Identify All Client-to-Server Message Types (Including Extensions):**
    - List every client-to-server message type defined in the [PROTOCOL] protocol exactly as specified in the official documentation, RFCs, or other recognized authoritative sources.
-   - The list must be exhaustive. Ensure that no valid client-to-server message type is missing.
+   - Ensure that extended or optional commands (such as BDAT in the case of Exim's SMTP extensions) are also included if they are part of the protocol's official extensions.
    - If the protocol documentation provides message codes or numeric values alongside the message types, include them. This is not server response code.
    - Present your answer in a structured format (e.g., a JSON array or a table) to ensure clarity and completeness.
    - If applicable, sort the list in alphabetical order or according to the order specified in the official documentation.
@@ -38,9 +38,9 @@ Please adhere to the following instructions:
      {
        "protocol": "SSH",
        "client_to_server_messages": [
-         {"name": "KEXINIT", "code": "20", "description": Description of KEXINIT including its purpose, and usage},
-         {"name": "SERVICE_REQUEST", "code": "5", "description": Description of SERVICE_REQUEST including its purpose, and usage},
-         {"name": "USERAUTH_REQUEST", "code": "50", "description": Description of USERAUTH_REQUEST including its purpose, and usage}
+         {"name": "KEXINIT", "code": "20", "description": "Description of KEXINIT including its purpose and usage"},
+         {"name": "SERVICE_REQUEST", "code": "5", "description": "Description of SERVICE_REQUEST including its purpose and usage"},
+         {"name": "USERAUTH_REQUEST", "code": "50", "description": "Description of USERAUTH_REQUEST including its purpose and usage"}
          // ... include other message types as defined in the official documentation.
        ]
      }
@@ -72,7 +72,7 @@ Please adhere to the following instructions:
      ```
 
 4. **Error Handling and Completeness:**
-   - If certain message types are not clearly defined in the official sources, include a note on these uncertainties and list any potential candidates in a separate section (e.g., "Potential Candidates").
+   - If certain message types (including any extensions like BDAT) are not clearly defined in the official sources, include a note on these uncertainties and list any potential candidates in a separate section (e.g., "Potential Candidates").
    - Cross-check multiple official sources to confirm the completeness of the list.
    - **Example:**  
      Add a section for ambiguous or uncertain message types, for example:  

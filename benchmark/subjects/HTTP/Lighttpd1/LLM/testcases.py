@@ -129,7 +129,7 @@ def using_llm(prompt: str) -> TestCase:
                 {"role": "user", "content": prompt}
             ],
             response_format=TestCase,
-            timeout=30
+            timeout=90
         )
         response = completion.choices[0].message.parsed
 

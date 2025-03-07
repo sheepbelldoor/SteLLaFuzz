@@ -19,7 +19,7 @@ def main() -> None:
     output_dir = args.output_dir
 
     try:
-        if True:
+        if False:
             # 1. Extract message types
             message_types: dict = get_protocol_message_types(protocol)
 
@@ -39,7 +39,7 @@ def main() -> None:
 
         if True:
             # 5. Save results
-            # test_cases = json.load(open(f"testcase_results/{protocol}_testcases.json"))
+            test_cases = json.load(open(f"testcase_results/{protocol}_testcases.json"))
             save_test_cases(test_cases, output_dir)
 
     except Exception as e:

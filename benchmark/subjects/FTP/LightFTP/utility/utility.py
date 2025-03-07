@@ -108,6 +108,7 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
         file_path = os.path.join(output_dir, f"new_{idx}.raw")
         with open(file_path, "wb") as f:
             f.write(concatnated_messages)
+        concatnated_messages = bytearray()
 
 def save_messages(messages: dict) -> None:
     """Save individual messages to separate files.

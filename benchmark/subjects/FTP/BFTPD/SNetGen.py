@@ -19,7 +19,7 @@ def main() -> None:
     output_dir = args.output_dir
 
     try:
-        if False:
+        if True:
             # 1. Extract message types
             message_types: dict = get_protocol_message_types(protocol)
 

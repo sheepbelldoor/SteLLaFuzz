@@ -39,7 +39,7 @@ def main() -> None:
 
         if True:
             # 5. Save results
-            test_cases = json.load(open(f"testcase_results/{protocol}_testcases.json"))
+            # test_cases = json.load(open(f"testcase_results/{protocol}_testcases.json"))
             save_test_cases(test_cases, output_dir)
 
     except Exception as e:

@@ -25,7 +25,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   #Move to fuzzing folder
   if [ $FUZZER = "snetgen" ]; then
     pip install pydantic openai
-    python3 SNetGen.py -o ${WORKDIR}/in-tls -p TLS
+    python3 SNetGen.py -o ${WORKDIR}/in-tls -p TLS -s ${WORKDIR}/in-tls
   fi
   cd $WORKDIR/${TARGET_DIR}
   timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -x ${WORKDIR}/tls.dict -o $OUTDIR -N tcp://127.0.0.1/4433 $OPTIONS ./apps/openssl s_server -key key.pem -cert cert.pem -4 -naccept 1 -no_anti_replay

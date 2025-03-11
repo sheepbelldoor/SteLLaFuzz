@@ -28,7 +28,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   fi
   if [ $FUZZER = "snetgen" ]; then
     pip install pydantic openai
-    python3 SNetGen.py -o ${WORKDIR}/in-dtls -p DTLS12
+    python3 SNetGen.py -o ${WORKDIR}/in-dtls -p DTLS12 -s ${WORKDIR}/in-dtls
   fi
   #Move to fuzzing folder
   cd $WORKDIR

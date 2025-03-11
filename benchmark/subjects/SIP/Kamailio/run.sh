@@ -29,7 +29,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   fi
   if [ $FUZZER = "snetgen" ]; then
     pip install pydantic openai
-    python3 SNetGen.py -o ${WORKDIR}/in-sip -p SIP
+    python3 SNetGen.py -o ${WORKDIR}/in-sip -p SIP -s ${WORKDIR}/in-sip
   fi
   #Move to fuzzing folder
   export KAMAILIO_MODULES="src/modules"

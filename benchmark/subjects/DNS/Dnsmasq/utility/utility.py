@@ -7,7 +7,7 @@ from pprint import pprint
 MODEL = "gpt-4o-mini"
 LLM_RESULT_DIR = "llm_outputs"
 TEST_MESSAGE_DIR = os.path.join(LLM_RESULT_DIR, "messages")
-SEQUENCE_REPEAT = 5
+SEQUENCE_REPEAT = 4
 LLM_RETRY = 3
 
 def hex_to_bytearray(hex_string: str) -> str:
@@ -95,23 +95,31 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
     concatnated_messages = bytearray()
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
-
+    
     idx = 1
-
     for testcase in test_cases.values():
         for sequence in testcase["sequences"]:
-            for message in sequence["messages"]:
-                if message["is_binary"]:
-                    # have to convert hex to binary
-                    concatnated_messages += hex_to_bytearray(message["message"]) + b"\r\n"
-                else:
-                    concatnated_messages += message["message"].encode() + b"\r\n"
+            try:
+                for message in sequence["messages"]:
+                    if message["is_binary"]:
+                        # have to convert hex to binary        
+                        concatnated_messages += hex_to_bytearray(message["message"]) + b"\r\n"
+                    else:
+                        concatnated_messages += message["message"].encode() + b"\r\n"
 
-            file_path = os.path.join(output_dir, f"new_{idx}.raw")
-            with open(file_path, "wb") as f:
-                f.write(concatnated_messages)
-            concatnated_messages = bytearray()
-            idx += 1
+                # Find the next available file name
+                while True:
+                    file_path = os.path.join(output_dir, f"new_{idx}.raw")
+                    if not os.path.exists(file_path):
+                        break
+                    idx += 1
+                
+                with open(file_path, "wb") as f:
+                    f.write(concatnated_messages)
+                concatnated_messages = bytearray()
+                idx += 1
+            except Exception as e:
+                print(f"Error: {e}")
             
 def save_messages(messages: dict) -> None:
     """Save individual messages to separate files.
@@ -152,3 +160,32 @@ def save_messages(messages: dict) -> None:
             file_path = os.path.join(TEST_MESSAGE_DIR, f"{message_type}_{idx}.raw")
             with open(file_path, "wb") as f:
                 f.write(message)
+
+def load_seed_messages(seed_messages_dir: str) -> list[str]:
+    """Load seed messages from files.
+    
+    Args:
+        seed_messages_dir (str): Directory containing seed message files
+        
+    Returns:
+        list[str]: List of seed messages with non-ASCII characters converted to hex representation
+    """
+    seed_messages = []
+    for file in os.listdir(seed_messages_dir):
+        file_path = os.path.join(seed_messages_dir, file)
+        # Read file as binary
+        with open(file_path, "rb") as f:
+            binary_content = f.read()
+        
+        # Convert to readable format (ASCII where possible, hex otherwise)
+        readable_content = ""
+        for byte in binary_content:
+            # If printable ASCII (32-126 range, plus tab, newline, carriage return)
+            if byte in (9, 10, 13) or (32 <= byte <= 126):
+                readable_content += chr(byte)
+            else:
+                # Convert to hex representation
+                readable_content += f" {byte:02x} "
+        
+        seed_messages.append(readable_content)
+    return seed_messages

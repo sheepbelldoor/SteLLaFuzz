@@ -24,64 +24,74 @@ class TestCase(BaseModel):
 MESSAGE_PROMPT = """\
 You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to generate client-to-server message sequences for the [PROTOCOL] protocol based on the following inputs:
 
-1. **Type Sequence:**  
-[SEQUENCE]
+1. **Seed Message:**
+   ```
+   [SEED_MESSAGE]
+   ```
+   (This is the existing, valid message loaded using the provided load_seed_messages function. The function reads seed messages from files and converts non-ASCII characters to their hex representation. The valid parameters present in these seed messages must be preserved in all generated sequences.)
 
-2. **Type Structure:**  
-[STRUCTURE]
+2. **Type Sequence:**  
+   [SEQUENCE]
 
-3. **Number of Message Sequences to Generate:**  
-[NUMBER]
+3. **Type Structure:**  
+   [STRUCTURE]
+
+4. **Number of Message Sequences to Generate:**  
+   [NUMBER]
 
 Please adhere to the following instructions:
 
 1. **Generate Messages for the Sequence:**
-   - Generate messages according to the order specified in type sequence.
-   - Create [NUMBER] message sequences following the order specified in type sequence.
-   - If additional messages are needed, generate them according to the protocol specification.
-   - For binary-based protocols, represent the message as a sequence of bytes in hex format seperated in spaces (e.g., "1a 0b 34 00").
-   - For text-based protocols, generate the message in plain ASCII text seperated in spaces, newlines, or CRLF according to the protocol specification if necessary.
-   - For each message in a sequence, map the message type to its corresponding structure from type structure and generate realistic, concrete values for each defined field.
-   - For each message, if is_binary is true, all messages MUST be written in a hex format seperated in spaces.
-   - **Example:**  
-     For SMTP, an acceptable output would be:  
-     ```json
-     {
-        "protocol": "SMTP",
-        "sequences": [
-            {
-                "sequenceId": "1",
-                "messages": [
-                    {"message": "HELO example.com", "is_binary": False},
-                    {"message": "MAIL FROM:<sender@example.com>", "is_binary": False},
-                    {"message": "RCPT TO:<recipient@example.com>", "is_binary": False},
-                    {"message": "DATA", "is_binary": False},
-                    {"message": "From: Sender <sender@example.com>\nTo: Recipient <recipient@example.com>\nSubject: Test Email\n\nThis is a test email body.", "is_binary": False},
-                    {"message": "QUIT", "is_binary": False}
-                ],
-                "explanation": "Explanation of the sequence generation process"
-            }
-        ]
-     }
-     ```
-     For SSH, an acceptable output would be:
-     ```json
-     {
-        "protocol": "SSH",
-        "sequences": [
-            {
-                "sequenceId": "1",
-                "messages": [
-                    {"message": "53 53 2d 48 2e 32 2d 30 70 4f 6e 65 53 53 5f 48 2e 37 0d 35 00 0a", "is_binary": True},
-                    {"message": "00 00 9c 05 14 09 00 00 00 00 00 00 00 00 00 30 01 75 63 76 72 32 65 35 35 39 31 73 2d 61 68 35 32 2c 36 6c 7a 62 69 00 00 1a 00 6f 6e 65 6e 7a 2c 69 6c 40 62 70 6f 6e 65 73 73 2e 68 6f 63 2c 6d 6c 7a 62 69 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2c 00 1e 06 00 00 20 00 e5 2f a3 7d cd 47 43 62 28 15 ac da bb 5f 07 29 ff 30 84 f6 c4 af c2 cf 90 ed 5f 99 cb 58 74 3b 00 00 00 00 00 00 00 00 0c 00 00 0a", "is_binary": True},
-                    {"message": "00 15 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 18 00 05 00 00 73 0c 68 73 75 2d 65 73 61 72 74 75 00 68 00 00 00 00 b9 00 1a ac 9c e0 c1 fa 00 d5 00 00 0a 30", "is_binary": True},
-                    {"message": "00 32 00 00 75 06 75 62 74 6e 00 75 00 00 73 0e 68 73 63 2d 6e 6f 65 6e 74 63 6f 69 00 6e 00 00 6e 04 6e 6f 00 65 00 00 00 00 00 00 f3 00 35 ee e3 b0 27 3a 00 5d 00 00 0a 48", "is_binary": True}
-                ],
-                "explanation": "Explanation of the sequence generation process"
-            }
-        ]
-     }
-     ```
+   - MUST use the valid parameters from seed message as a baseline and preserve these values throughout the generated messages.
+   - Generate messages according to the order specified in the type sequence.
+   - Create [NUMBER] message sequences following the order specified in the type sequence.
+   - To increase diversity and maximize coverage, vary the message type sequence (e.g., by rearranging the order, repeating specific message types, or introducing edge-case scenarios) while keeping the valid parameters from seed message intact.
+   - If additional messages are needed, generate them according to the protocol specification using the preserved valid parameters.
+   - For binary-based protocols, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "1a 0b 34 00").
+   - For text-based protocols, generate the message in plain ASCII text using spaces, newlines, or CRLF as needed according to the protocol specification.
+   - For each message in a sequence, map the message type to its corresponding structure from the type structure and generate realistic, concrete values for each defined field using the valid parameters from seed message.
+   - For each message, if is_binary is true, all messages MUST be written in a hex format separated by spaces.
+
+   **Example:**  
+   For SMTP, an acceptable output would be:
+   ```json
+   {
+      "protocol": "SMTP",
+      "sequences": [
+          {
+              "sequenceId": "1",
+              "messages": [
+                  {"message": "HELO localhost", "is_binary": false},
+                  {"message": "MAIL FROM:<ubuntu@ubuntu>", "is_binary": false},
+                  {"message": "RCPT TO:<ubuntu@ubuntu>", "is_binary": false},
+                  {"message": "DATA", "is_binary": false},
+                  {"message": "From: ubuntu <ubuntu@ubuntu>\\r\\nTo: ubuntu <ubuntu@ubuntu>\\r\\nSubject: Test Email\\r\\n\\r\\nThis is a test email body.", "is_binary": false},
+                  {"message": "QUIT", "is_binary": false}
+              ],
+              "explanation": "Explanation of the sequence generation process"
+          }
+      ]
+   }
+
+   ```
+   For SSH, an acceptable output would be:
+   ```json
+   {
+      "protocol": "SSH",
+      "sequences": [
+          {
+              "sequenceId": "1",
+              "messages": [
+                  {"message": "SSH-2.0-OpenSSH_7.5\\r\\n", "is_binary": False},
+                  {"message": "00 00 9c 05 14 09 00 00 00 00 00 00 00 00 00 30 01 75 63 76 72 32 65 35 35 39 31 73 2d 61 68 35 32 2c 36 6c 7a 62 69 00 00 1a 00 6f 6e 65 6e 7a 2c 69 6c 40 62 70 6f 6e 65 73 73 2e 68 6f 63 2c 6d 6c 7a 62 69 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2c 00 1e 06 00 00 20 00 e5 2f a3 7d cd 47 43 62 28 15 ac da bb 5f 07 29 ff 30 84 f6 c4 af c2 cf 90 ed 5f 99 cb 58 74 3b 00 00 00 00 00 00 00 00 0c 00 00 0a", "is_binary": True},
+                  {"message": "00 15 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 18 00 05 00 00 73 0c 68 73 75 2d 65 73 61 72 74 75 00 68 00 00 00 00 b9 00 1a ac 9c e0 c1 fa 00 d5 00 00 0a 30", "is_binary": True},
+                  {"message": "00 32 00 00 75 06 75 62 74 6e 00 75 00 00 73 0e 68 73 63 2d 6e 6f 65 6e 74 63 6f 69 00 6e 00 00 6e 04 6e 6f 00 65 00 00 00 00 00 00 f3 00 35 ee e3 b0 27 3a 00 5d 00 00 0a 48", "is_binary": True}
+              ],
+              "explanation": "Explanation of the sequence generation process"
+          }
+      ]
+   }
+   ```
 
 2. **Ensure Maximum Coverage:**
    - Design sequences to maximize coverage by including variations (e.g., repeated message types, edge-case values, error-triggering values) that exercise different protocol states and transitions.
@@ -95,6 +105,8 @@ Please adhere to the following instructions:
 4. **Step-by-Step Reasoning:**
    - In the "explanation" field, include a clear, step-by-step explanation of how the sequences were generated.
    - Describe the process of mapping each message type in sequence to its corresponding structure in type structure and how actual values were determined.
+   - Note any differences in handling text-based versus binary-based protocols.
+   - Explain how the valid parameters from seed message were preserved and utilized.
    - Note any differences in handling text-based versus binary-based protocols.
 
 5. **Final Output Format:**
@@ -123,13 +135,13 @@ def using_llm(prompt: str) -> TestCase:
     try:
         completion = client.beta.chat.completions.parse(
             model=MODEL,
-            temperature=0.7,
+            temperature=0.3,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
             ],
             response_format=TestCase,
-            timeout=90
+            timeout=180
         )
         response = completion.choices[0].message.parsed
 
@@ -138,7 +150,7 @@ def using_llm(prompt: str) -> TestCase:
         print(f"Error processing protocol: {e}")
         return None
 
-def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict) -> None:
+def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict, seed_message: str) -> None:
     sequence = ""
     structure = ""
     for i, type in enumerate(type_sequence):
@@ -152,11 +164,18 @@ def get_test_case(protocol: str, type_sequence: List[str], specialized_structure
     sequence = sequence.strip()
     structure = structure.strip()
 
+    if seed_message:
+        seed_message = f"{seed_message}"
+    else:
+        seed_message = ""
+    
     prompt = MESSAGE_PROMPT.replace("[PROTOCOL]", protocol)\
                            .replace("[SEQUENCE]", sequence)\
                            .replace("[STRUCTURE]", structure)\
-                           .replace("[NUMBER]", str(SEQUENCE_REPEAT))
+                           .replace("[NUMBER]", str(SEQUENCE_REPEAT))\
+                           .replace("[SEED_MESSAGE]", seed_message)
 
+    
     for _ in range(LLM_RETRY):
         response = using_llm(prompt)
         if response is not None:
@@ -167,12 +186,13 @@ def get_test_case(protocol: str, type_sequence: List[str], specialized_structure
 
     return response.model_dump()
 
-def get_test_cases(protocol: str, message_sequences: dict, specialized_structures: dict) -> None:
+def get_test_cases(protocol: str, message_sequences: dict, specialized_structures: dict, seed_message: str) -> None:
     test_cases = {}
     for sequence in message_sequences["sequences"]:
         try:
             print(f"Processing message sequence: {sequence['sequenceId']}")
-            test_cases[sequence["sequenceId"]] = get_test_case(protocol, sequence["type_sequence"], specialized_structures)
+            test_cases[sequence["sequenceId"]] = get_test_case(protocol, sequence["type_sequence"], specialized_structures, seed_message)
+            print(test_cases[sequence["sequenceId"]])
         except Exception as e:
             print(f"Error processing message sequence {sequence['sequenceId']} in {protocol}: {e}")
     

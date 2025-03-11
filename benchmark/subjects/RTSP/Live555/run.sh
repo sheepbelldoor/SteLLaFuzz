@@ -29,7 +29,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   fi
   if [ $FUZZER = "snetgen" ]; then
     pip install pydantic openai
-    python3 SNetGen.py -o ${WORKDIR}/in-rtsp -p RTSP
+    python3 SNetGen.py -o ${WORKDIR}/in-rtsp -p RTSP -s ${WORKDIR}/in-rtsp
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/testProgs

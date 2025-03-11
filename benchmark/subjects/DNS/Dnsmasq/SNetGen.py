@@ -48,7 +48,7 @@ def main() -> None:
 
         if True:
             # 5. Save results
-            test_cases[0] = json.load(open(f"testcase_results/{protocol}_testcases.json"))
+            # test_cases[0] = json.load(open(f"testcase_results/{protocol}_testcases.json"))
             for seed_index, test_case in test_cases.items():
                 save_test_cases(test_case, output_dir)
 

@@ -1,7 +1,7 @@
 import os
 import json
 import random
-
+from typing import List
 from pprint import pprint
 
 MODEL = "gpt-4o-mini"
@@ -161,7 +161,7 @@ def save_messages(messages: dict) -> None:
             with open(file_path, "wb") as f:
                 f.write(message)
 
-def load_seed_messages(seed_messages_dir: str) -> list[str]:
+def load_seed_messages(seed_messages_dir: str) -> List[str]:
     """Load seed messages from files.
     
     Args:

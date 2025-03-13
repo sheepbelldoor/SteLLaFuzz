@@ -3,11 +3,12 @@ import json
 import random
 from typing import List
 from pprint import pprint
+import re
 
 MODEL = "gpt-4o-mini"
 LLM_RESULT_DIR = "llm_outputs"
 TEST_MESSAGE_DIR = os.path.join(LLM_RESULT_DIR, "messages")
-SEQUENCE_REPEAT = 4
+SEQUENCE_REPEAT = 2
 LLM_RETRY = 3
 
 def hex_to_bytearray(hex_string: str) -> str:
@@ -29,61 +30,58 @@ def hex_to_bytearray(hex_string: str) -> str:
     
     return bytearray.fromhex(hex_string)
 
-def check_all_fields_non_binary(message_payload: dict) -> bool:
-    """Check if all fields in the message payload are non-binary.
+def convert_message_to_binary(message: str) -> bytes:
+    """
+    메시지를 처리하는 함수:
+    1. 메시지를 공백으로 나누고, 각 요소가 0x로 시작하는지 확인
+    2. 0x로 시작하는 요소는 바이트 데이터로 변환하고 is_binary=True로 표시
+       0x로 시작하지 않는 요소는 바이트로 변환하되 is_binary=False로 표시
+    3. 리스트를 순회하며 bytearray에 데이터를 추가
+       - 현재 데이터와 다음 데이터가 모두 is_binary=False이면 사이에 공백 추가
+       - 그 외에는 공백 없이 이어붙임
+    4. 생성된 bytearray 반환
     
     Args:
-        message (dict): Message dictionary containing payload fields
+        message (str): 처리할 메시지
         
     Returns:
-        bool: True if all fields are non-binary (is_binary=False), False otherwise
+        bytes: 변환된 바이트 데이터
     """
+    if not message:
+        return b''
     
-    for field in message_payload:
-        if field.get("is_binary", True):
-            return False
-            
-    return True
-
-def get_message_random(message: dict) -> bytearray:
-    # Randomly select a message from the list of generated messages
-    selected_message = random.choice(message["generated_message"])
-    message = bytearray()
-
-    is_text_based = not selected_message["is_binary"]
-
-    # Process the message string directly
-    if is_text_based:
-        if not (selected_message['message'].endswith('\r\n') or selected_message['message'].endswith('\n')):
-            message.extend(f"{selected_message['message']}\r\n".encode())
+    # 1. 메시지를 공백으로 나누고 각 요소 처리
+    parts = message.split(' ')
+    processed_parts = []
+    
+    # 2. 각 요소를 처리하여 (data, is_binary) 형태로 저장
+    for part in parts:
+        if part.startswith('0x'):
+            try:
+                # 0x 접두사 제거 후 16진수를 바이트로 변환
+                binary_value = bytes([int(part[2:], 16)])
+                processed_parts.append((binary_value, True))
+            except ValueError:
+                # 변환 실패 시 원래 문자열을 바이트로 변환
+                processed_parts.append((part.encode(), False))
         else:
-            message.extend(selected_message['message'].encode())
-    else:
-        # If it were binary, you would handle it differently
-        # Assuming you have a way to convert the string to binary if needed
-        binary_string = hex_to_bytearray(selected_message["message"])  # Example, adjust as needed
-        message.extend(binary_string)
+            # 0x로 시작하지 않는 요소는 그대로 바이트로 변환
+            processed_parts.append((part.encode(), False))
     
-    # message.extend(b'\r\n')
-    return message
-
-def generate_test_cases(protocol: str, message_types: dict, _message_sequences: dict) -> None:
-    message_sequences = {}
-    idx = 1
+    # 3. 처리된 부분들을 순회하며 bytearray에 추가
+    result = bytearray()
+    for i in range(len(processed_parts)):
+        current_data, current_is_binary = processed_parts[i]
+        result.extend(current_data)
+        
+        # 마지막 요소가 아니고, 현재와 다음 요소가 모두 바이너리가 아닌 경우 공백 추가
+        if i < len(processed_parts) - 1:
+            next_is_binary = processed_parts[i+1][1]
+            if not current_is_binary and not next_is_binary:
+                result.extend(b' ')
     
-    # 메시지 시퀀스 하나당 SEQUENCE_REPEAT 수만큼 메시지 생성
-    for _ in range(SEQUENCE_REPEAT):
-        for type_sequence in _message_sequences["message_sequences"]:
-            message_sequence = bytearray()
-
-            for message_type in type_sequence["message_type"]:
-                message = get_message_random(message_types[message_type])
-                message_sequence.extend(message)
-
-            message_sequences[idx] = message_sequence
-            idx += 1
-
-    return message_sequences
+    # 4. 생성된 bytearray 반환
+    return bytes(result)
 
 def save_test_cases(test_cases: dict, output_dir: str) -> None:
     """Save test cases to files.
@@ -100,12 +98,8 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
     for testcase in test_cases.values():
         for sequence in testcase["sequences"]:
             try:
-                for message in sequence["messages"]:
-                    if message["is_binary"]:
-                        # have to convert hex to binary        
-                        concatnated_messages += hex_to_bytearray(message["message"]) + b"\r\n"
-                    else:
-                        concatnated_messages += message["message"].encode() + b"\r\n"
+                for message in sequence["messages"]:   
+                    concatnated_messages += convert_message_to_binary(message["message"]) + b"\r\n"
 
                 # Find the next available file name
                 while True:
@@ -121,46 +115,6 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
             except Exception as e:
                 print(f"Error: {e}")
             
-def save_messages(messages: dict) -> None:
-    """Save individual messages to separate files.
-    
-    Args:
-        messages (dict): Dictionary containing message types and their generated messages
-    """
-    os.makedirs(TEST_MESSAGE_DIR, exist_ok=True)
-    
-    for message_type, message_data in messages.items():
-        for idx, generated_msg in enumerate(message_data["generated_message"], 1):
-            # print(f"Debug: generated_msg = {generated_msg}")  # Debugging line
-            
-            if isinstance(generated_msg, str):
-                print(f"Error: generated_msg is a string, expected a dictionary. Value: {generated_msg}")
-                continue  # Skip this iteration if it's a string
-            
-            message = bytearray()
-            
-            # Check if the message is text-based
-            is_text_based = not generated_msg["is_binary"]  # Use is_binary directly
-            
-            # Process the message string directly
-            if is_text_based:
-                if not (generated_msg['message'].endswith('\r\n') or generated_msg['message'].endswith('\n')):
-                    message.extend(f"{generated_msg['message']}\r\n".encode())
-                else:
-                    message.extend(generated_msg['message'].encode())
-            else:
-                # If it were binary, you would handle it differently
-                # Assuming you have a way to convert the string to binary if needed
-                binary_string = hex_to_bytearray(generated_msg["message"])  # Example, adjust as needed
-                message.extend(binary_string)
-            
-            # message.extend(b'\r\n')
-            
-            # Save individual message to file with message type in filename
-            file_path = os.path.join(TEST_MESSAGE_DIR, f"{message_type}_{idx}.raw")
-            with open(file_path, "wb") as f:
-                f.write(message)
-
 def load_seed_messages(seed_messages_dir: str) -> List[str]:
     """Load seed messages from files.
     
@@ -185,7 +139,7 @@ def load_seed_messages(seed_messages_dir: str) -> List[str]:
                 readable_content += chr(byte)
             else:
                 # Convert to hex representation
-                readable_content += f" {byte:02x} "
+               readable_content += f" 0x{byte:02x} "
         
         seed_messages.append(readable_content)
     return seed_messages

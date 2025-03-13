@@ -16,18 +16,6 @@ class Message(BaseModel):
     """
     type: str
 
-class Coverage(BaseModel):
-    """
-    Describes the coverage achieved by a message sequence.
-    Attributes:
-        line (str): A description of the line coverage achieved.
-        state (str): A description of the state coverage achieved.
-        branch (str): A description of the branch coverage achieved.
-    """
-    line: str
-    state: str
-    branch: str
-
 class Sequence(BaseModel):
     """
     Represents a single message sequence.
@@ -39,7 +27,6 @@ class Sequence(BaseModel):
     """
     sequenceId: str
     type_sequence: List[str]
-    coverage: Coverage
 
 class ProtocolSequences(BaseModel):
     """
@@ -71,14 +58,14 @@ Please adhere to the following instructions:
    - Each sequence should vary the order of messages and include conditional transitions or error-handling cases to trigger different execution paths.
    - Design the sequences to explore edge cases and alternative branches in the protocol's state machine to maximize line, state, and branch coverage.
    - Message types may be repeated in a sequence if it helps to achieve greater coverage.
-   - The number of sequences should be as many as possible.
+   - Generate as many valid sequences as possible.
+   - You can use the same message type multiple times in a sequence.
 
 2. **Include Detailed Message Information:**
    - For each message in the "messages" array, ensure that the "type" field exactly matches one of the provided client-to-server types.
    - The "details" field should include any specific parameters or variations relevant to that message type to help trigger different states or branches.
 
 3. **Provide a Coverage Rationale:**
-   - In the "coverage" field for each sequence, include a descriptive summary of the expected line, state, and branch coverage achieved by that sequence.
    - In the "explanation" field, describe your step-by-step reasoning process for constructing these sequences, including how you considered different protocol states and error paths.
 
 4. **Final Output Requirements:**
@@ -98,12 +85,7 @@ Please adhere to the following instructions:
              "Type of message 2",
              "Type of message 3",
              // ...
-           ],
-           "coverage": {
-             "line": "Description of line coverage achieved",
-             "state": "Description of state coverage achieved",
-             "branch": "Description of branch coverage achieved"
-           }
+           ]
          }
          // ... additional sequence objects
        ],

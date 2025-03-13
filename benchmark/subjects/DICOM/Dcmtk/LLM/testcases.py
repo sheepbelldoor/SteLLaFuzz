@@ -10,7 +10,7 @@ TESTCASE_OUTPUT_DIR = "testcase_results"
 
 class Message(BaseModel):
     message: str
-    is_binary: bool
+    # is_binary: bool
 
 class Sequence(BaseModel):
     sequenceId: str
@@ -47,7 +47,7 @@ Please adhere to the following instructions:
    - Create [NUMBER] message sequences following the order specified in the type sequence.
    - To increase diversity and maximize coverage, vary the message type sequence (e.g., by rearranging the order, repeating specific message types, or introducing edge-case scenarios) while keeping the valid parameters from seed message intact.
    - If additional messages are needed, generate them according to the protocol specification using the preserved valid parameters.
-   - For binary-based protocols, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "1a 0b 34 00").
+   - For binary-based protocols, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
    - For text-based protocols, generate the message in plain ASCII text using spaces, newlines, or CRLF as needed according to the protocol specification.
    - For each message in a sequence, map the message type to its corresponding structure from the type structure and generate realistic, concrete values for each defined field using the valid parameters from seed message.
    - For each message, if is_binary is true, all messages MUST be written in a hex format separated by spaces.
@@ -61,18 +61,17 @@ Please adhere to the following instructions:
           {
               "sequenceId": "1",
               "messages": [
-                  {"message": "HELO localhost", "is_binary": false},
-                  {"message": "MAIL FROM:<ubuntu@ubuntu>", "is_binary": false},
-                  {"message": "RCPT TO:<ubuntu@ubuntu>", "is_binary": false},
-                  {"message": "DATA", "is_binary": false},
-                  {"message": "From: ubuntu <ubuntu@ubuntu>\\r\\nTo: ubuntu <ubuntu@ubuntu>\\r\\nSubject: Test Email\\r\\n\\r\\nThis is a test email body.", "is_binary": false},
-                  {"message": "QUIT", "is_binary": false}
+                  {"message": "HELO localhost"},
+                  {"message": "MAIL FROM:<ubuntu@ubuntu>"},
+                  {"message": "RCPT TO:<ubuntu@ubuntu>"},
+                  {"message": "DATA"},
+                  {"message": "From: ubuntu <ubuntu@ubuntu>\\r\\nTo: ubuntu <ubuntu@ubuntu>\\r\\nSubject: Test Email\\r\\n\\r\\nThis is a test email body."},
+                  {"message": "QUIT"}
               ],
               "explanation": "Explanation of the sequence generation process"
           }
       ]
    }
-
    ```
    For SSH, an acceptable output would be:
    ```json
@@ -82,10 +81,10 @@ Please adhere to the following instructions:
           {
               "sequenceId": "1",
               "messages": [
-                  {"message": "SSH-2.0-OpenSSH_7.5\\r\\n", "is_binary": False},
-                  {"message": "00 00 9c 05 14 09 00 00 00 00 00 00 00 00 00 30 01 75 63 76 72 32 65 35 35 39 31 73 2d 61 68 35 32 2c 36 6c 7a 62 69 00 00 1a 00 6f 6e 65 6e 7a 2c 69 6c 40 62 70 6f 6e 65 73 73 2e 68 6f 63 2c 6d 6c 7a 62 69 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2c 00 1e 06 00 00 20 00 e5 2f a3 7d cd 47 43 62 28 15 ac da bb 5f 07 29 ff 30 84 f6 c4 af c2 cf 90 ed 5f 99 cb 58 74 3b 00 00 00 00 00 00 00 00 0c 00 00 0a", "is_binary": True},
-                  {"message": "00 15 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 06 18 00 05 00 00 73 0c 68 73 75 2d 65 73 61 72 74 75 00 68 00 00 00 00 b9 00 1a ac 9c e0 c1 fa 00 d5 00 00 0a 30", "is_binary": True},
-                  {"message": "00 32 00 00 75 06 75 62 74 6e 00 75 00 00 73 0e 68 73 63 2d 6e 6f 65 6e 74 63 6f 69 00 6e 00 00 6e 04 6e 6f 00 65 00 00 00 00 00 00 f3 00 35 ee e3 b0 27 3a 00 5d 00 00 0a 48", "is_binary": True}
+                  {"message": "SSH-2.0-OpenSSH_7.5"},
+                  {"message": "0x00 0x00 0x9c 0x05 0x14 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x30 0x01 0x75 0x63 0x76 0x72 0x32 0x65 0x35 0x35 0x39 0x31 0x73 0x2d 0x61 0x68 0x35 0x32 0x2c 0x36 0x6c 0x7a 0x62 0x69 0x00 0x00 0x1a 0x00 0x6f 0x6e 0x65 0x6e 0x7a 0x2c 0x69 0x6c 0x40 0x62 0x70 0x6f 0x6e 0x65 0x73 0x73 0x2e 0x68 0x6f 0x63 0x2c 0x6d 0x6c 0x7a 0x62 0x69 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x2c 0x00 0x1e 0x06 0x00 0x00 0x20 0x00 0xe5 0x2f 0xa3 0x7d 0xcd 0x47 0x43 0x62 0x28 0x15 0xac 0xda 0xbb 0x5f 0x07 0x29 0xff 0x30 0x84 0xf6 0xc4 0xaf 0xc2 0xcf 0x90 0xed 0x5f 0x99 0xcb 0x58 0x74 0x3b 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x0c 0x00 0x00 0x0a"},
+                  {"message": "0x00 0x15 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x06 0x18 0x00 0x05 0x00 0x00 0x73 0x0c 0x68 0x73 0x75 0x2d 0x65 0x73 0x61 0x72 0x74 0x75 0x00 0x68 0x00 0x00 0x00 0x00 0xb9 0x00 0x1a 0xac 0x9c 0xe0 0xc1 0xfa 0x00 0xd5 0x00 0x00 0x0a 0x30"},
+                  {"message": "0x00 0x32 0x00 0x00 0x75 0x06 0x75 0x62 0x74 0x6e 0x00 0x75 0x00 0x00 0x73 0x0e 0x68 0x73 0x63 0x2d 0x6e 0x6f 0x65 0x6e 0x74 0x63 0x6f 0x69 0x00 0x6e 0x00 0x00 0x6e 0x04 0x6e 0x6f 0x00 0x65 0x00 0x00 0x00 0x00 0x00 0x00 0xf3 0x00 0x35 0xee 0xe3 0xb0 0x27 0x3a 0x00 0x5d 0x00 0x00 0x0a 0x48"}
               ],
               "explanation": "Explanation of the sequence generation process"
           }
@@ -135,13 +134,13 @@ def using_llm(prompt: str) -> TestCase:
     try:
         completion = client.beta.chat.completions.parse(
             model=MODEL,
-            temperature=0.3,
+            # temperature=0.3,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
             ],
             response_format=TestCase,
-            timeout=180
+            timeout=30
         )
         response = completion.choices[0].message.parsed
 
@@ -150,7 +149,7 @@ def using_llm(prompt: str) -> TestCase:
         print(f"Error processing protocol: {e}")
         return None
 
-def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict, seed_message: str) -> None:
+def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict, seed_message) -> None:
     sequence = ""
     structure = ""
     for i, type in enumerate(type_sequence):
@@ -200,12 +199,12 @@ def get_test_cases(protocol: str, message_sequences: dict, specialized_structure
     os.makedirs(TESTCASE_OUTPUT_DIR, exist_ok=True)
     file_path = os.path.join(TESTCASE_OUTPUT_DIR, f"{protocol.lower()}_testcases.json")
     with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(test_cases, f, indent=4, ensure_ascii=False)    
+        json.dump(test_cases, f, indent=4, ensure_ascii=False)
     print(f"Saved results for {protocol} to {file_path}")
 
     os.makedirs(LLM_RESULT_DIR, exist_ok=True)
     file_path = os.path.join(LLM_RESULT_DIR, f"4_{protocol.lower()}_testcases.json")
     with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(test_cases, f, indent=4, ensure_ascii=False)   
+        json.dump(test_cases, f, indent=4, ensure_ascii=False)
 
     return test_cases

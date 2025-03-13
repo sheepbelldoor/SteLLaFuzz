@@ -7,7 +7,10 @@ from LLM.protocol_types import get_protocol_message_types
 from LLM.specialized_structures import get_specialized_structures
 from LLM.message_sequence import get_message_sequences
 from LLM.testcases import get_test_cases
+from LLM.structured_seed_message import get_structured_seed_message
 from utility.utility import save_test_cases, load_seed_messages
+
+import pprint
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -21,7 +24,6 @@ def main() -> None:
     seed_messages_dir = args.seed_messages
     try:
         seed_messages: list[str] = load_seed_messages(seed_messages_dir) if seed_messages_dir else None
-        # print(f"Seed messages: {seed_messages}")
         test_cases = {}
         if True:
             # 1. Extract message types
@@ -41,7 +43,9 @@ def main() -> None:
             seed_index = 0
             if seed_messages:
                 for seed_message in seed_messages:
-                    test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, seed_message)
+                    structured_seed_message = get_structured_seed_message(protocol, seed_message)
+                    print(structured_seed_message)
+                    test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
                     seed_index += 1
             else:
                 test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)

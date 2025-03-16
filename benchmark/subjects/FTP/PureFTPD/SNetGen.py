@@ -44,7 +44,6 @@ def main() -> None:
             if seed_messages:
                 for seed_message in seed_messages:
                     structured_seed_message = get_structured_seed_message(protocol, seed_message)
-                    print(structured_seed_message)
                     test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
                     seed_index += 1
             else:

@@ -55,11 +55,11 @@ Please adhere to the following instructions:
 
 1. **Generate Message Sequences:**
    - Create multiple message sequences that include all client-to-server message types from the provided list.
-   - Each sequence should vary the order of messages and include conditional transitions or error-handling cases to trigger different execution paths.
+   - Each sequence should vary the order of messages and include conditional transitions, error-handling cases, or loop constructs to trigger different execution paths.
+   - Loops are explicitly allowed: If it helps to maximize state coverage, you MUST include loop constructs (e.g., repeating a set of messages a specified number of times) within the message sequences.
    - Design the sequences to explore edge cases and alternative branches in the protocol's state machine to maximize line, state, and branch coverage.
    - Message types may be repeated in a sequence if it helps to achieve greater coverage.
    - Generate as many valid sequences as possible.
-   - You can use the same message type multiple times in a sequence.
 
 2. **Include Detailed Message Information:**
    - For each message in the "messages" array, ensure that the "type" field exactly matches one of the provided client-to-server types.
@@ -83,7 +83,7 @@ Please adhere to the following instructions:
            "type_sequence": [
              "Type of message 1",
              "Type of message 2",
-             "Type of message 3",
+             "Type of message 3"
              // ...
            ]
          }

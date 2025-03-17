@@ -5,7 +5,8 @@ import argparse
 from LLM.basic_protocol_template import get_basic_protocol_template
 from LLM.protocol_types import get_protocol_message_types
 from LLM.specialized_structures import get_specialized_structures
-from LLM.message_sequence import get_message_sequences
+from LLM.normal_message_sequence import get_message_sequences
+from LLM.loop_message_sequence import get_loop_message_sequences
 from LLM.testcases import get_test_cases
 from LLM.structured_seed_message import get_structured_seed_message
 from utility.utility import save_test_cases, load_seed_messages
@@ -26,28 +27,38 @@ def main() -> None:
         seed_messages: list[str] = load_seed_messages(seed_messages_dir) if seed_messages_dir else None
         test_cases = {}
         if True:
-            # 1. Extract message types
-            message_types: dict = get_protocol_message_types(protocol)
+            if True:
+                # 1. Extract message types
+                message_types: dict = get_protocol_message_types(protocol)
 
-            # 2. Extract specialized structure
-            # message_types = json.load(open(f"protocol_type_results/{protocol}_types.json"))
-            specialized_structures: dict = get_specialized_structures(protocol, message_types)
+                # 2. Extract specialized structure
+                # message_types = json.load(open(f"protocol_type_results/{protocol}_types.json"))
+                specialized_structures: dict = get_specialized_structures(protocol, message_types)
 
-            # 3. Generate message sequences
-            # message_types = json.load(open(f"protocol_type_results/{protocol}_types.json"))
-            message_sequences: dict = get_message_sequences(protocol, message_types)
+                # 3. Generate message sequences
+                # message_types = json.load(open(f"protocol_type_results/{protocol}_types.json"))
+                message_sequences: dict = get_message_sequences(protocol, message_types)
+                # Loop message sequences can be None
+                loop_message_sequences: dict = get_loop_message_sequences(protocol, message_types)
 
-            # 4. Generate test cases
-            # specialized_structures = json.load(open(f"protocol_specialized_structure_results/{protocol}_specialized_structures.json"))
-            # message_sequences = json.load(open(f"message_sequence_results/{protocol}_message_sequences.json"))
-            seed_index = 0
-            if seed_messages:
-                for seed_message in seed_messages:
-                    structured_seed_message = get_structured_seed_message(protocol, seed_message)
-                    test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
-                    seed_index += 1
-            else:
-                test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)
+            if True:
+                # 4. Generate test cases
+                # specialized_structures = json.load(open(f"protocol_specialized_structure_results/{protocol}_specialized_structures.json"))
+                # message_sequences = json.load(open(f"message_sequence_results/{protocol}_message_sequences.json"))
+                # loop_message_sequences = json.load(open(f"message_sequence_results/{protocol}_loop_message_sequences.json"))
+                seed_index = 0
+                if seed_messages:
+                    for seed_message in seed_messages:
+                        structured_seed_message = get_structured_seed_message(protocol, seed_message)
+                        test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
+                        seed_index += 1
+                        if loop_message_sequences:
+                            test_cases[seed_index] = get_test_cases(protocol, loop_message_sequences, specialized_structures, structured_seed_message)
+                            seed_index += 1
+                else:
+                    test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)
+                    if loop_message_sequences:
+                        test_cases[1] = get_test_cases(protocol, loop_message_sequences, specialized_structures, None)
 
         if True:
             # 5. Save results

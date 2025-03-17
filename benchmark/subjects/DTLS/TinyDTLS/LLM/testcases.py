@@ -191,20 +191,28 @@ def get_test_cases(protocol: str, message_sequences: dict, specialized_structure
         try:
             print(f"Processing message sequence: {sequence['sequenceId']}")
             test_cases[sequence["sequenceId"]] = get_test_case(protocol, sequence["type_sequence"], specialized_structures, seed_message)
-            print(test_cases[sequence["sequenceId"]])
         except Exception as e:
             print(f"Error processing message sequence {sequence['sequenceId']} in {protocol}: {e}")
     
     # Save the results to a JSON file
     os.makedirs(TESTCASE_OUTPUT_DIR, exist_ok=True)
-    file_path = os.path.join(TESTCASE_OUTPUT_DIR, f"{protocol.lower()}_testcases.json")
+    idx = 1
+    file_path = os.path.join(TESTCASE_OUTPUT_DIR, f"{protocol.lower()}_testcases_{idx}.json")
+    while os.path.exists(file_path):
+        idx += 1
+        file_path = os.path.join(TESTCASE_OUTPUT_DIR, f"{protocol.lower()}_testcases_{idx}.json")
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(test_cases, f, indent=4, ensure_ascii=False)
     print(f"Saved results for {protocol} to {file_path}")
 
     os.makedirs(LLM_RESULT_DIR, exist_ok=True)
-    file_path = os.path.join(LLM_RESULT_DIR, f"4_{protocol.lower()}_testcases.json")
+    idx = 1
+    file_path = os.path.join(LLM_RESULT_DIR, f"4_{protocol.lower()}_testcases_{idx}.json")
+    while os.path.exists(file_path):
+        idx += 1
+        file_path = os.path.join(LLM_RESULT_DIR, f"4_{protocol.lower()}_testcases_{idx}.json")
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(test_cases, f, indent=4, ensure_ascii=False)
+    print(f"Saved results for {protocol} to {file_path}")
 
     return test_cases

@@ -54,45 +54,44 @@ You are provided with a complete list of client-to-server message types:
 Please adhere to the following instructions:
 
 1. **Generate Message Sequences:**
-   - Create multiple message sequences that include all client-to-server message types from the provided list.
+   - Create multiple message sequences that collectively include all client-to-server message types from the provided list.
    - Each sequence should vary the order of messages and include conditional transitions or error-handling cases to trigger different execution paths.
-   - Design the sequences to explore edge cases and alternative branches in the protocol's state machine to maximize line, state, and branch coverage.
+   - The goal is full exploration of edge cases and alternative branches in the protocol's state machine to maximize coverage.
+   - You *may* repeat message types within or across sequences if it helps to uncover additional states or branches, but it is *not required* if doing so does not add coverage value.
    - Generate as many valid sequences as possible.
-   - You can use the same message type multiple times in a sequence.
 
-2. **Include Detailed Message Information:**
-   - For each message in the "messages" array, ensure that the "type" field exactly matches one of the provided client-to-server types.
-   - The "details" field should include any specific parameters or variations relevant to that message type to help trigger different states or branches.
+2. **Include Detailed Message Information (Optional):**
+   - If needed, you may include a "details" or similar field for each message to specify parameters or edge conditions that could lead to different states or error scenarios.
+   - However, ensure that any message type you specify strictly matches one of the provided client-to-server types.
 
 3. **Provide a Coverage Rationale:**
-   - In the "explanation" field, describe your step-by-step reasoning process for constructing these sequences, including how you considered different protocol states and error paths.
+   - In the "explanation" field, describe the step-by-step reasoning for constructing the sequences, focusing on how the chosen order, conditional paths, and potential repetition were used to achieve broad coverage.
 
 4. **Final Output Requirements:**
    - Do not include any extraneous text; only provide the final JSON output.
-   - Ensure the output is valid JSON strictly adhering to the above structure.
+   - The output must be valid JSON, strictly adhering to the structure below.
 
 5. **Final Output Structure:**
-   - The final output must be a JSON object structured as follows:
-     ```json
-     {
-       "protocol": "[PROTOCOL]",
-       "sequences": [
-         {
-           "sequenceId": "A unique identifier for the sequence",
-           "type_sequence": [
-             "Type of message 1",
-             "Type of message 2",
-             "Type of message 3",
-             // ...
-           ]
-         }
-         // ... additional sequence objects
-       ],
-       "explanation": "A brief explanation of how these sequences were constructed to maximize coverage, including the rationale behind the order and selection of messages."
-     }
-     ```
+   ```json
+   {
+     "protocol": "[PROTOCOL]",
+     "sequences": [
+       {
+         "sequenceId": "A unique identifier for the sequence",
+         "type_sequence": [
+           "Type of message 1",
+           "Type of message 2",
+           "Type of message 3"
+           // ...
+         ]
+       }
+       // ... additional sequence objects
+     ],
+     "explanation": "A brief explanation of how these sequences were constructed to maximize coverage, including the rationale behind the order and selection of messages."
+   }
+   ```
 
-Please produce the final JSON output accordingly, strictly following the above instructions.
+Please generate the final message call sequences strictly following the above instructions.
 """
 
 def using_llm(prompt: str) -> ProtocolSequences:

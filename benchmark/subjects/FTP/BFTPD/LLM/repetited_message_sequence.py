@@ -46,7 +46,8 @@ class ProtocolSequences(BaseModel):
 MESSAGE_PROMPT = """\
 You are a network protocol expert with deep understanding of [PROTOCOL].
 Your task is to generate a series of message sequences for client-to-server communications in the [PROTOCOL] protocol.
-The objective is to maximize code coverage by exercising as many lines, states, and branches in the protocol implementation as possible.
+
+The objective is to systematically traverse the protocol's state machine so that each defined protocol state is entered or tested at least once (including normal operation states, error states, out-of-order message handling states, and any other states relevant to [PROTOCOL]). To do this, you MUST create message sequences that explore all possible transitions between states, as well as any edge cases that may appear in real-world usage.
 
 You are provided with a complete list of client-to-server message types:
 [TYPES]
@@ -54,46 +55,49 @@ You are provided with a complete list of client-to-server message types:
 Please adhere to the following instructions:
 
 1. **Generate Message Sequences:**
-   - Create multiple message sequences that include all client-to-server message types from the provided list.
-   - Each sequence should vary the order of messages and include conditional transitions, error-handling cases, or repetition constructs to trigger different execution paths.
-   - Repetitions are explicitly allowed: If it helps to maximize state coverage, you MUST include repeated message patterns (e.g., sending a set of messages multiple times) within the message sequences.
-   - Design the sequences to explore edge cases and alternative branches in the protocol's state machine to maximize line, state, and branch coverage.
-   - Message types may be repeated in a sequence if it helps to achieve greater coverage.
-   - Generate as many valid sequences as possible.
+   - You MUST create multiple message sequences that incorporate **all** client-to-server message types from the provided list at least once across the entire set of sequences.
+     - (Note: It is NOT required for every sequence to use every message type. The requirement is that each message type appears at least once somewhere in the overall collection of sequences. You do not need to execute all message types in every single sequence.)
+   - Each sequence MUST vary the order of messages and include conditional transitions, error-handling cases, or any patterns that can cause the protocol to enter different states.
+   - **Repetitions MUST be included**:
+     - You MUST repeat a message type or a set of messages if doing so leads to exploring different protocol states, error conditions, or transitions.
+     - Repeated or consecutive occurrences of the same message type MUST serve a specific purpose (e.g., transitioning the protocol into a unique state or validating behavior when multiple identical messages arrive in sequence).
+       - (Note: Causing an explicit error is NOT a requirement; the primary objective is to discover valid message sequences that traverse as many unique states as possible.)
+   - You MUST generate as many **valid** sequences as possible within the protocol's rules.
+     - (Note: The overarching goal is to produce valid message call sequences according to the protocol specification.)
 
 2. **Include Detailed Message Information:**
-   - For each message in the "messages" array, ensure that the "type" field exactly matches one of the provided client-to-server types.
-   - The "details" field should include any specific parameters or variations relevant to that message type to help trigger different states or branches.
+   - For each message in the "type_sequence" array, you MUST ensure that the "type" field exactly matches one of the provided client-to-server types.
+   - If necessary, you MAY add a "details" or similar field (within your JSON structure) to specify parameters or variations for each message that might trigger unique transitions or error states.
 
 3. **Provide a Coverage Rationale:**
-   - In the "explanation" field, describe your step-by-step reasoning process for constructing these sequences, including how you considered different protocol states and error paths.
+   - In the "explanation" field, you MUST briefly describe how you designed these sequences to traverse and test every reachable state (including error states, alternate branches, and repeated transitions).
+   - You MUST explain the logic behind the order, repetition, and any special variations you used.
 
 4. **Final Output Requirements:**
-   - Do not include any extraneous text; only provide the final JSON output.
-   - Ensure the output is valid JSON strictly adhering to the above structure.
+   - You MUST NOT include any extraneous text; only provide the final JSON output.
+   - You MUST ensure the output is valid JSON strictly adhering to the structure below. (Invalid JSON or additional text will not be accepted.)
 
 5. **Final Output Structure:**
-   - The final output must be a JSON object structured as follows:
-     ```json
-     {
-       "protocol": "[PROTOCOL]",
-       "sequences": [
-         {
-           "sequenceId": "A unique identifier for the sequence",
-           "type_sequence": [
-             "Type of message 1",
-             "Type of message 2",
-             "Type of message 3"
-             // ...
-           ]
-         }
-         // ... additional sequence objects
-       ],
-       "explanation": "A brief explanation of how these sequences were constructed to maximize coverage, including the rationale behind the order and selection of messages."
-     }
-     ```
+   The final output MUST be a JSON object structured as follows:
+   ```json
+   {
+     "protocol": "[PROTOCOL]",
+     "sequences": [
+       {
+         "sequenceId": "A unique identifier for the sequence",
+         "type_sequence": [
+           "Type of message 1",
+           "Type of message 2",
+           "Type of message 3"
+           // ...
+         ]
+       }
+       // ... additional sequence objects
+     ],
+     "explanation": "A brief explanation of how these sequences were constructed to cover all protocol states, including the rationale behind the order, repetition, and selection of messages."
+   }
 
-Please produce the final JSON output accordingly, strictly following the above instructions.
+Please generate the final message call sequences strictly following the above instructions.
 """
 
 def using_llm(prompt: str) -> ProtocolSequences:
@@ -147,4 +151,3 @@ def get_repetited_message_sequences(protocol: str, message_types: dict) -> dict:
         json.dump(response.model_dump(), f, indent=4, ensure_ascii=False)
 
     return response.model_dump()
-# … existing code …

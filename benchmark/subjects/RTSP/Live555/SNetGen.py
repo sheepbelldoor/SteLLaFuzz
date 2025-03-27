@@ -37,15 +37,15 @@ def main() -> None:
 
                 # 2. Extract specialized structure
                 # message_types = json.load(open(f"protocol_type_results/{protocol}_types.json"))
-                # specialized_structures: dict = get_specialized_structures(protocol, message_types)
+                specialized_structures: dict = get_specialized_structures(protocol, message_types)
 
                 # 3. Generate message sequences
                 # message_types = json.load(open(f"protocol_type_results/{protocol}_types.json"))
-                # message_sequences: dict = get_message_sequences(protocol, message_types)
+                message_sequences: dict = get_message_sequences(protocol, message_types)
                 # Loop message sequences can be None
-                # repetited_message_sequences: dict = get_repetited_message_sequences(protocol, message_types)
+                repetited_message_sequences: dict = get_repetited_message_sequences(protocol, message_types)
 
-            if False:
+            if True:
                 # 4. Generate test cases
                 # specialized_structures = json.load(open(f"protocol_specialized_structure_results/{protocol}_specialized_structures.json"))
                 # message_sequences = json.load(open(f"message_sequence_results/{protocol}_message_sequences.json"))
@@ -64,7 +64,7 @@ def main() -> None:
                     if repetited_message_sequences:
                         test_cases[1] = get_test_cases(protocol, repetited_message_sequences, specialized_structures, None)
 
-        if False:
+        if True:
             # 5. Save results
             # test_cases[0] = json.load(open(f"testcase_results/{protocol}_testcases.json"))
             for seed_index, test_case in test_cases.items():

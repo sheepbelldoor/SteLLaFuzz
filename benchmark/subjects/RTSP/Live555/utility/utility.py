@@ -143,3 +143,37 @@ def load_seed_messages(seed_messages_dir: str) -> List[str]:
         
         seed_messages.append(readable_content)
     return seed_messages
+
+
+def save_fuzzing_dictionary(fuzzing_dictionary: dict, dictionary_path: str) -> None:
+    """Save fuzzing dictionary to files.
+    
+    Args:
+        fuzzing_dictionary (dict): Dictionary containing fuzzing dictionary
+        dictionary_path (str): Path to save the fuzzing dictionary
+    """
+    dictionary_string = ""
+    for value in fuzzing_dictionary["fuzzing_dictionary"]:
+        # 특수 문자를 16진수 이스케이프 시퀀스로 변환
+        escaped_data = ""
+        for char in value['data']:
+            if char in ('\r', '\n', '\t') or ord(char) < 32 or ord(char) > 126:
+                escaped_data += f"\\x{ord(char):02x}"
+            else:
+                escaped_data += char
+        
+        dictionary_string += f"\"{escaped_data}\"\n"
+
+    print(dictionary_string)
+
+    if not os.path.exists(dictionary_path):
+        with open(dictionary_path, "w") as f:
+            f.write(dictionary_string)
+    else:
+        with open(dictionary_path, "r") as f:
+            existing_dictionary = f.read()
+            existing_dictionary += "\n"
+            existing_dictionary += dictionary_string
+            with open(dictionary_path, "w") as f:
+                f.write(existing_dictionary)
+            

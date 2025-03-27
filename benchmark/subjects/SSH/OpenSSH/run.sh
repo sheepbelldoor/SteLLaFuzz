@@ -29,7 +29,8 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   fi
   if [ $FUZZER = "snetgen" ]; then
     pip3 install pydantic openai
-    python3 SNetGen.py -o ${WORKDIR}/in-ssh -p SSH -s ${WORKDIR}/in-ssh
+    cd ${WORKDIR}
+    python3 SNetGen.py -o ${WORKDIR}/in-ssh -p SSH -s ${WORKDIR}/in-ssh -d ${WORKDIR}/ssh.dict
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}

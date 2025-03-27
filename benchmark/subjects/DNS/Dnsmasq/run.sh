@@ -29,11 +29,16 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   fi
   if [ $FUZZER = "snetgen" ]; then
     pip install pydantic openai
+    cd ${WORKDIR}
     python3 SNetGen.py -o ${WORKDIR}/in-dns -p DNS -s ${WORKDIR}/in-dns
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/src
-  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5353 $OPTIONS ./dnsmasq
+  if [ $FUZZER = "snetgen" ]; then
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5353 -x ${WORKDIR}/DNS.dict $OPTIONS ./dnsmasq
+  else
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5353 $OPTIONS ./dnsmasq
+  fi
 
   STATUS=$?
 

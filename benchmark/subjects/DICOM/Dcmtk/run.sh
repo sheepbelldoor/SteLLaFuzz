@@ -29,11 +29,16 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   fi
   if [ $FUZZER = "snetgen" ]; then
     pip install pydantic openai
+    cd ${WORKDIR}
     python3 SNetGen.py -o ${WORKDIR}/in-dicom -p DICOM -s ${WORKDIR}/in-dicom
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/build/bin
-  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/5158 $OPTIONS -c ${WORKDIR}/clean ./dcmqrscp --single-process
+  if [ $FUZZER = "snetgen" ]; then
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/5158 -x ${WORKDIR}/DICOM.dict $OPTIONS -c ${WORKDIR}/clean ./dcmqrscp --single-process
+  else
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/5158 $OPTIONS -c ${WORKDIR}/clean ./dcmqrscp --single-process
+  fi
 
   STATUS=$?
 

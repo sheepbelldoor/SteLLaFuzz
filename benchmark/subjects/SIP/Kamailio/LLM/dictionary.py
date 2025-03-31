@@ -30,42 +30,50 @@ Message Types:
 [TYPES]
 ```
 
-Instructions:
+Follow these strict guidelines:
 
 1. **Leverage the Base Dictionary and Message Types:**
-   - Start with the existing dictionary data with base dictionary and build upon it.
-   - Review the provided list of message types used in constructing protocol message sequences.
-   - Identify any coverage gaps in base dictionary related to specific message types and generate new fuzzing payloads targeting those areas (e.g., headers, payloads, status codes specific to each type).
+   - Begin with the provided base dictionary and build upon it.
+   - Review the list of message types used for constructing protocol message sequences.
+   - Identify any coverage gaps in the base dictionary related to specific message types and generate new fuzzing payloads targeting those areas (e.g., headers, payloads, status codes specific to each type).
 
 2. **Generate Fuzzing Dictionary Entries:**
-   - For each new entry, assign a unique and descriptive "name" indicating the test case and targeted message type (e.g., "Type-A Header Overflow", "Type-B Invalid Format Injection").
-   - The "data" field should include the fuzzing input string or byte sequence crafted to trigger vulnerabilities in the context of the specified message type.
+   - For each new entry, assign a unique and descriptive "name" that indicates the test case and the targeted message type (e.g., "Type-A Header Overflow", "Type-B Invalid Format Injection").
+   - The "data" field should include the specially crafted fuzzing input string or byte sequence designed to trigger vulnerabilities in the context of the specified message type.
    - Ensure that the new entries complement the existing dictionary data and collectively maximize vulnerability coverage across all [TYPES].
 
-3. **Final Output Requirements:**
-   - The final output must be valid JSON strictly following the structure below.
-   - Include the protocol name under the key "protocol" and the key "fuzzing_dictionary" containing a list of Dictionary objects.
-   - Do not include any extraneous fields or text.
+3. **Output Size Limitation and Binary Data Handling:**
+   - MUST limit the size of each fuzzing payload to a maximum of 128 bytes to avoid errors such as "[-] PROGRAM ABORT : Keyword too big in line #" during fuzzing execution.
+   - When representing binary data in the "0xHH" format, ensure that each "0xHH" token is treated as one byte.
 
-Final Output Structure:
+4. **Final Output Requirements:**
+   - The final output must be valid JSON strictly following the structure below.
+   - Include the protocol name under the key "protocol" and the key "fuzzing_dictionary" containing a list of dictionary objects.
+   - Do not include any extraneous fields or text.
+   - For text-based data, generate the message in plain ASCII text (using spaces, newlines, or CRLF as needed).
+   - For binary data, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
+   - You can use the both of the text and binary data in the fuzzing dictionary.
+
+Final output structure example:
 ```json
 {
   "protocol": "[PROTOCOL]",
   "fuzzing_dictionary": [
     {
-      "name": "A unique identifier or descriptive name for the fuzzing entry",
-      "data": "The fuzzing input string or byte sequence"
+      "name": "Descriptive fuzzing entry name",
+      "data": "Fuzzing input string or 0xHH formatted binary sequence (e.g., 0x1a 0x0b 0x34 0x00)"
     }
     // ... additional fuzzing entries
   ]
 }
+```
 
 Please generate the final fuzzing dictionary entries strictly following the above instructions.
 """
 
 DICTIONARY_PROMPT_WITHOUT_BASE_DICTIONARY = """\
-You are a network protocol expert with deep understanding of [PROTOCOL] and advanced fuzzing techniques.
-Your task is to generate a complete fuzzing dictionary for the [PROTOCOL] protocol without any pre-existing dictionary data.
+You are a network protocol expert with deep knowledge of the [PROTOCOL] protocol and advanced fuzzing techniques.
+Your task is to generate a complete fuzzing dictionary for the [PROTOCOL] protocol from scratch, without relying on any pre-existing dictionary data.
 You are also provided with a list of message types used to compose protocol message sequences.
 
 Message Types:
@@ -73,33 +81,37 @@ Message Types:
 [TYPES]
 ```
 
-Instructions:
+Follow these strict guidelines:
+
 1. **Generate Fuzzing Dictionary Entries from Scratch:**
-   - Create multiple fuzzing payloads designed to target different parts of the [PROTOCOL] protocol (e.g., headers, payloads, status codes, etc.).
-   - Utilize the provided messagetype list to understand the various message types used in protocol sequences.
-   - For each entry, assign a unique and descriptive "name" that includes reference to the relevant message type (e.g., "Type-A Buffer Overflow", "Type-C Malformed Data Injection").
-   - The "data" field should include the fuzzing input string or byte sequence specifically crafted for the corresponding message type.
+   - Create multiple fuzzing payloads targeting different parts of the [PROTOCOL] protocol (e.g., headers, payloads, status codes, etc.).
+   - Use the provided message type list to craft payloads specific to each message type.
+   - Assign each entry a unique and descriptive "name" that references the relevant message type (e.g., "Type-A Buffer Overflow", "Type-C Malformed Data Injection").
+   - The "data" field should contain the specially crafted fuzzing input string or byte sequence for the corresponding message type.
 
 2. **Coverage Considerations:**
-   - Ensure that the set of generated payloads covers a wide range of potential vulnerabilities by targeting the diverse message types in the message type list.
-   - Include variations in payloads using boundary values, special characters, and malformed structures to enhance test coverage across different protocol sections.
+   - Ensure that the generated payload set covers a wide range of potential vulnerabilities by targeting diverse message types from the provided list.
+   - Include variations in payloads using boundary values, special characters, and malformed structures to thoroughly test different protocol sections.
 
-3. **Final Output Requirements:**
+3. **Output Size Limitation and Binary Data Handling:**
+   - Limit the size of each fuzzing payload to a maximum of 128 bytes to prevent errors such as "[-] PROGRAM ABORT : Keyword too big in line #" during fuzzing execution.
+   - When representing binary data in the "0xHH" format, ensure that each "0xHH" is treated as one byte.
+
+4. **Final Output Requirements:**
    - The final output must be valid JSON strictly following the structure below.
-   - Include the protocol name under the key "protocol" and the key "fuzzing_dictionary" containing a list of Dictionary objects.
+   - Include the protocol name under the key "protocol" and a list of fuzzing entries under the key "fuzzing_dictionary".
    - Do not include any extraneous fields or text.
-   - For binary-based data, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
-   - For text-based data, generate the message in plain ASCII text using spaces, newlines, or CRLF as needed.
-
-
-Final Output Structure: 
+   - For text-based data, generate the message in plain ASCII text (using spaces, newlines, or CRLF as needed).
+   - For binary data, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
+   - You can use the both of the text and binary data in the fuzzing dictionary.
+Final output structure example:
 ```json
 {
   "protocol": "[PROTOCOL]",
   "fuzzing_dictionary": [
     {
-      "name": "A unique identifier or descriptive name for the fuzzing entry",
-      "data": "The fuzzing input string or byte sequence"
+      "name": "Descriptive fuzzing entry name",
+      "data": "Fuzzing input string or 0xHH formatted binary sequence (e.g., 0x1a 0x0b 0x34 0x00)"
     }
     // ... additional fuzzing entries
   ]

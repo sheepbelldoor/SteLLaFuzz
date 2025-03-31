@@ -144,6 +144,23 @@ def load_seed_messages(seed_messages_dir: str) -> List[str]:
         seed_messages.append(readable_content)
     return seed_messages
 
+def convert_0xhh_to_escape_sequence(text: str) -> str:
+    """0xHH 형식의 텍스트를 \\xHH 형식으로 변환합니다.
+    
+    Args:
+        text (str): 변환할 텍스트 (예: "0x41 0x42")
+        
+    Returns:
+        str: 변환된 텍스트 (예: "\\x41\\x42")
+    """
+    # 정규식을 사용하여 0xHH 패턴을 찾아 \xHH로 변환
+    pattern = r'0x([0-9a-fA-F]{2})'
+    result = re.sub(pattern, r'\\x\1', text)
+    
+    # 공백 제거
+    result = result.replace(' ', '')
+    
+    return result
 
 def save_fuzzing_dictionary(fuzzing_dictionary: dict, dictionary_path: str) -> None:
     """Save fuzzing dictionary to files.
@@ -156,7 +173,13 @@ def save_fuzzing_dictionary(fuzzing_dictionary: dict, dictionary_path: str) -> N
     for value in fuzzing_dictionary["fuzzing_dictionary"]:
         # 특수 문자를 16진수 이스케이프 시퀀스로 변환
         escaped_data = ""
-        for char in value['data']:
+        data = value['data']
+        
+        # 0xHH 형식이 포함된 경우 변환
+        if '0x' in data:
+            data = convert_0xhh_to_escape_sequence(data)
+        
+        for char in data:
             if char in ('\r', '\n', '\t') or ord(char) < 32 or ord(char) > 126:
                 escaped_data += f"\\x{ord(char):02x}"
             else:

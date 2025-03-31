@@ -40,7 +40,7 @@ Follow these strict guidelines:
 2. **Generate Fuzzing Dictionary Entries:**
    - For each new entry, assign a unique and descriptive "name" that indicates the test case and the targeted message type (e.g., "Type-A Header Overflow", "Type-B Invalid Format Injection").
    - The "data" field should include the specially crafted fuzzing input string or byte sequence designed to trigger vulnerabilities in the context of the specified message type.
-   - Ensure that the new entries complement the existing dictionary data and collectively maximize vulnerability coverage across all [TYPES].
+   - Ensure that each payload maintains the essential structural validity of the [PROTOCOL] so that it is not outright rejected by a [PROTOCOL] parser. Modify input fields minimally and carefully so that you test edge cases without creating completely invalid data.
 
 3. **Output Size Limitation and Binary Data Handling:**
    - MUST limit the size of each fuzzing payload to a maximum of 128 bytes to avoid errors such as "[-] PROGRAM ABORT : Keyword too big in line #" during fuzzing execution.
@@ -83,11 +83,11 @@ Message Types:
 
 Follow these strict guidelines:
 
-1. **Generate Fuzzing Dictionary Entries from Scratch:**
-   - Create multiple fuzzing payloads targeting different parts of the [PROTOCOL] protocol (e.g., headers, payloads, status codes, etc.).
+1. **Generate Valid Fuzzing Dictionary Entries from Scratch:**
+   - Create multiple fuzzing payloads targeting different parts of the [PROTOCOL] protocol (e.g., headers, payloads, status codes, etc.) while ensuring that the overall structure remains syntactically valid according to [PROTOCOL] specifications.
    - Use the provided message type list to craft payloads specific to each message type.
-   - Assign each entry a unique and descriptive "name" that references the relevant message type (e.g., "Type-A Buffer Overflow", "Type-C Malformed Data Injection").
-   - The "data" field should contain the specially crafted fuzzing input string or byte sequence for the corresponding message type.
+   - Assign each entry a unique and descriptive "name" that references the relevant message type.
+   - The "data" field should contain the specially crafted fuzzing input string or byte sequence for the corresponding message type, ensuring that no entry creates invalid data that would be outright rejected by a [PROTOCOL] parser. Instead, modify fields minimally to test edge cases while preserving the core structure.
 
 2. **Coverage Considerations:**
    - Ensure that the generated payload set covers a wide range of potential vulnerabilities by targeting diverse message types from the provided list.

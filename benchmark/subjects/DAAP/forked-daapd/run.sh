@@ -79,8 +79,8 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   cp *.html ${WORKDIR}/${OUTDIR}/cov_html/.
 
   if [ $FUZZER = "snetgen" ]; then
-    cp -r ${WORKDIR}/in-daap ${WORKDIR}/${OUTDIR}/
-    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/
+    cp -r ${WORKDIR}/in-daap ${WORKDIR}/${OUTDIR}/in-daap/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
   fi
 
   #Step-3. Save the result to the ${WORKDIR} folder

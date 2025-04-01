@@ -51,8 +51,8 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   cp *.html ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/cov_html/
 
   if [ $FUZZER = "snetgen" ]; then
-    cp -r ${WORKDIR}/in-tls ${WORKDIR}/${OUTDIR}/
-    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/
+    cp -r ${WORKDIR}/in-tls ${WORKDIR}/${OUTDIR}/in-tls/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
   fi
 
   #Step-3. Save the result to the ${WORKDIR} folder

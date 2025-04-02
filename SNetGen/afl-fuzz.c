@@ -760,12 +760,13 @@ struct queue_entry *choose_seed(u32 target_state_id, u8 mode)
 }
 
 /* Update state-aware variables */
-void update_state_aware_variables(struct queue_entry *q, u8 dry_run)
+int update_state_aware_variables(struct queue_entry *q, u8 dry_run)
 {
   khint_t k;
   int discard, i;
   state_info_t *state;
   unsigned int state_count;
+  int is_interesting = 0;
 
   if (!response_buf_size || !response_bytes) return;
 
@@ -774,6 +775,7 @@ void update_state_aware_variables(struct queue_entry *q, u8 dry_run)
   q->unique_state_count = get_unique_state_count(state_sequence, state_count);
 
   if (is_state_sequence_interesting(state_sequence, state_count)) {
+    is_interesting = 1;
     //Save the current kl_messages to a file which can be used to replay the newly discovered paths on the ipsm
     u8 *temp_str = state_sequence_to_string(state_sequence, state_count);
     u8 *fname = alloc_printf("%s/replayable-new-ipsm-paths/id:%llu:%s:%s", out_dir, get_cur_time() / 1000, temp_str, dry_run ? basename(q->fname) : "new");
@@ -983,6 +985,8 @@ void update_state_aware_variables(struct queue_entry *q, u8 dry_run)
 
   //Free state sequence
   if (state_sequence) ck_free(state_sequence);
+
+  return is_interesting;
 }
 
 /* Send (mutated) messages in order to the server under test */
@@ -1654,6 +1658,93 @@ static void add_to_queue(u8* fname, u32 len, u8 passed_det) {
   }
 }
 
+static void remove_from_queue(struct queue_entry* q) {
+    // 유효성 검사
+  if (!q || !queue) return;
+
+  // 큐에서 q의 위치 찾기 - 앞의 요소를 추적
+  struct queue_entry *prev = NULL;
+  struct queue_entry *current = queue;
+  
+  while (current && current != q) {
+    prev = current;
+    current = current->next;
+  }
+  
+  // q가 큐에 없으면 종료
+  if (!current) return;
+  
+  // 큐에서 요소 제거
+  if (!prev) {
+    // q가 첫 번째 요소인 경우
+    queue = q->next;
+  } else {
+    // q가 중간이나 끝인 경우
+    prev->next = q->next;
+  }
+  
+  // queue_top 업데이트
+  if (q == queue_top) {
+    queue_top = prev; // 이전 요소가 새로운 top이 됨
+  }
+  
+  // queue_cur 업데이트 - 현재 처리 중인 요소가 제거되면 다음 요소로 이동
+  if (q == queue_cur) {
+    queue_cur = q->next;
+  }
+  
+  // next_100 관계 재구성
+  if (queue) {
+    struct queue_entry *p = queue;
+    q_prev100 = p;
+    
+    u32 count = 0;
+    while (p) {
+      count++;
+      if (count % 100 == 0 && p->next) {
+        q_prev100->next_100 = p->next;
+        q_prev100 = p->next;
+      }
+      p = p->next;
+    }
+    
+    // 마지막 구간 처리
+    if (q_prev100 && q_prev100 != p) {
+      q_prev100->next_100 = NULL;
+    }
+  } else {
+    // 큐가 비어있게 된 경우
+    q_prev100 = NULL;
+  }
+  
+  // top_rated 배열 업데이트 (이 요소가 참조되고 있다면)
+  for (u32 i = 0; i < MAP_SIZE; i++) {
+    if (top_rated[i] == q) {
+      top_rated[i] = NULL; // 참조 제거
+    }
+  }
+  
+  // 카운터 업데이트
+  queued_paths--;
+  
+  // q가 아직 퍼징되지 않았다면 pending_not_fuzzed 감소
+  if (!q->was_fuzzed) {
+    pending_not_fuzzed--;
+  }
+  
+  // 메모리 해제
+  ck_free(q->fname);
+  if (q->trace_mini) ck_free(q->trace_mini);
+  
+  // AFLNet 특유의 데이터 구조 해제
+  for (u32 i = 0; i < q->region_count; i++) {
+    if (q->regions[i].state_sequence) ck_free(q->regions[i].state_sequence);
+  }
+  if (q->regions) ck_free(q->regions);
+  
+  // 마지막으로 queue_entry 자체 해제
+  ck_free(q);
+}
 
 /* Destroy the entire queue. */
 
@@ -3586,8 +3677,9 @@ static void perform_dry_run(char** argv) {
     res = calibrate_case(argv, q, use_mem, 0, 1);
     ck_free(use_mem);
 
+    unsigned int is_interesting = -1;
     /* Update state-aware variables (e.g., state machine, regions and their annotations */
-    if (state_aware_mode) update_state_aware_variables(q, 1);
+    if (state_aware_mode) is_interesting = update_state_aware_variables(q, 1);
 
     /* save the seed to file for replaying */
     u8 *fn_replay = alloc_printf("%s/replayable-queue/%s", out_dir, basename(q->fname));
@@ -3746,8 +3838,19 @@ static void perform_dry_run(char** argv) {
 
     if (q->var_behavior) WARNF("Instrumentation output varies across runs.");
 
-    q = q->next;
 
+    if (is_interesting == 1) {
+      SAYF(cLGN "[+] " cRST "Test case '%s' has interesting state sequence\n", fn);
+      q = q->next;
+    } else if (is_interesting == 0) {
+      SAYF(cLRD "[-] " cRST "Test case '%s' has no interesting state, remove it from the queue\n", fn);
+      struct queue_entry* remove_q = q;
+      q = q->next;
+      remove_from_queue(remove_q);
+    } else {
+      q = q->next;
+    }
+    
   }
 
   if (cal_failures) {
@@ -8129,6 +8232,15 @@ static void usage(u8* argv0) {
 
 }
 
+static void print_queue(void) {
+  struct queue_entry* q = queue;
+  SAYF("Queue:\n");
+  while (q) {
+    SAYF("'%s'\n", q->fname);
+    q = q->next;
+  }
+}
+
 
 /* Prepare output directories and fds. */
 
@@ -9229,6 +9341,7 @@ int main(int argc, char** argv) {
     use_argv = argv + optind;
 
   perform_dry_run(use_argv);
+  print_queue();
 
   cull_queue();
 

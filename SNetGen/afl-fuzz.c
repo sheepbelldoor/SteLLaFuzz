@@ -9347,12 +9347,25 @@ int main(int argc, char** argv) {
 
   show_init_stats();
 
+  SAYF("\n" cYEL "[START]" cRST "find_start_position()\n");
+  SAYF("\n" cYEL "[stop_soon]" cRST "stop_soon: %d\n", stop_soon);
   seek_to = find_start_position();
+  SAYF("\n" cYEL "[END]" cRST "find_start_position()\n");
 
+  SAYF("\n" cYEL "[START]" cRST "write_stats_file()\n");
+  SAYF("\n" cYEL "[stop_soon]" cRST "stop_soon: %d\n", stop_soon);
   write_stats_file(0, 0, 0);
+  SAYF("\n" cYEL "[END]" cRST "write_stats_file()\n");
+  SAYF("\n" cYEL "[START]" cRST "save_auto()\n");
+  SAYF("\n" cYEL "[stop_soon]" cRST "stop_soon: %d\n", stop_soon);
   save_auto();
+  SAYF("\n" cYEL "[END]" cRST "save_auto()\n");
 
+  SAYF("\n" cYEL "[START]" cRST "goto stop_fuzzing??\n");
+  SAYF("\n" cYEL "[stop_soon]" cRST "stop_soon: %d\n", stop_soon);
   if (stop_soon) goto stop_fuzzing;
+  SAYF("\n" cYEL "[HAHA]" cRST "Don't go to stop_fuzzing..\n");
+
 
   /* Woop woop woop */
 

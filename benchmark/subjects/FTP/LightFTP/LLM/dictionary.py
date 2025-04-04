@@ -17,8 +17,8 @@ class FuzzingDictionary(BaseModel):
 
 DICTIONARY_PROMPT_WITH_BASE_DICTIONARY = """\
 You are a network protocol expert with deep understanding of [PROTOCOL] and advanced fuzzing techniques.
-Your task is to generate a fuzzing dictionary for the [PROTOCOL] protocol by enhancing the existing dictionary data provided as [BASE_DICTIONARY].
-Additionally, you have information about the message types used to compose protocol sequences, provided as [TYPES].
+Your task is to generate a fuzzing dictionary for the [PROTOCOL] protocol by enhancing the existing dictionary data provided as base dictionary.
+Additionally, you have information about the message types used to compose protocol sequences, provided as message types.
 
 Base Dictionary:
 ```
@@ -38,13 +38,13 @@ Follow these strict guidelines:
    - Identify any coverage gaps in the base dictionary related to specific message types and generate new fuzzing payloads targeting those areas (e.g., headers, payloads, status codes specific to each type).
 
 2. **Generate Fuzzing Dictionary Entries:**
-   - For each new entry, assign a unique and descriptive "name" that indicates the test case and the targeted message type (e.g., "Type-A Header Overflow", "Type-B Invalid Format Injection").
-   - The "data" field should include the specially crafted fuzzing input string or byte sequence designed to trigger vulnerabilities in the context of the specified message type.
+   - For each new entry, assign a unique and descriptive "name" that indicates the test case and the targeted message type (e.g., "Type-A Header", "Type-B Payload").
+   - The "data" field should include the specially crafted fuzzing input string or byte sequence designed to validate the context of the specified message type.
    - Ensure that each payload maintains the essential structural validity of the [PROTOCOL] so that it is not outright rejected by a [PROTOCOL] parser. Modify input fields minimally and carefully so that you test edge cases without creating completely invalid data.
 
 3. **Output Size Limitation and Binary Data Handling:**
-   - MUST limit the size of each fuzzing payload to a maximum of 128 bytes to avoid errors such as "[-] PROGRAM ABORT : Keyword too big in line #" during fuzzing execution.
-   - When representing binary data in the "0xHH" format, ensure that each "0xHH" token is treated as one byte.
+   - MUST limit the size of each fuzzing payload to a maximum of 100 characters to avoid errors such as "[-] PROGRAM ABORT : Keyword too big in line #" during fuzzing execution.
+   - When representing binary data in the "0xhh" format, ensure that each "0xhh" token is treated as one character.
 
 4. **Final Output Requirements:**
    - The final output must be valid JSON strictly following the structure below.
@@ -94,8 +94,8 @@ Follow these strict guidelines:
    - Include variations in payloads using boundary values, special characters, and malformed structures to thoroughly test different protocol sections.
 
 3. **Output Size Limitation and Binary Data Handling:**
-   - Limit the size of each fuzzing payload to a maximum of 128 bytes to prevent errors such as "[-] PROGRAM ABORT : Keyword too big in line #" during fuzzing execution.
-   - When representing binary data in the "0xHH" format, ensure that each "0xHH" is treated as one byte.
+   - Limit the size of each fuzzing payload to a maximum of 100 characters to prevent errors such as "[-] PROGRAM ABORT : Keyword too big in line #" during fuzzing execution.
+   - When representing binary data in the "0xhh" format, ensure that each "0xhh" is treated as one character.
 
 4. **Final Output Requirements:**
    - The final output must be valid JSON strictly following the structure below.
@@ -104,6 +104,7 @@ Follow these strict guidelines:
    - For text-based data, generate the message in plain ASCII text (using spaces, newlines, or CRLF as needed).
    - For binary data, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
    - You can use the both of the text and binary data in the fuzzing dictionary.
+
 Final output structure example:
 ```json
 {
@@ -111,7 +112,7 @@ Final output structure example:
   "fuzzing_dictionary": [
     {
       "name": "Descriptive fuzzing entry name",
-      "data": "Fuzzing input string or 0xHH formatted binary sequence (e.g., 0x1a 0x0b 0x34 0x00)"
+      "data": "Fuzzing input string or 0xhh formatted binary sequence (e.g., 0x1a 0x0b 0x34 0x00)"
     }
     // ... additional fuzzing entries
   ]

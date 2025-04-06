@@ -3664,6 +3664,7 @@ static void perform_dry_run(char** argv) {
     fd = open(q->fname, O_RDONLY);
     if (fd < 0) PFATAL("Unable to open '%s'", q->fname);
 
+    SAYF("\n" cYEL "[stop_soon]" cRST "%d before ck_alloc_nozero\n", stop_soon);
     use_mem = ck_alloc_nozero(q->len);
 
     if (read(fd, use_mem, q->len) != q->len)
@@ -3671,24 +3672,30 @@ static void perform_dry_run(char** argv) {
 
     close(fd);
 
+    SAYF("\n" cYEL "[stop_soon]" cRST "%d before construct_kl_messages\n", stop_soon);
     /* AFLNet construct the kl_messages linked list for this queue entry*/
     kl_messages = construct_kl_messages(q->fname, q->regions, q->region_count);
 
+    SAYF("\n" cYEL "[stop_soon]" cRST "%d before calibrate_case\n", stop_soon);
     res = calibrate_case(argv, q, use_mem, 0, 1);
     ck_free(use_mem);
 
     unsigned int is_interesting = -1;
+    SAYF("\n" cYEL "[stop_soon]" cRST "%d before update_state_aware_variables\n", stop_soon);
     /* Update state-aware variables (e.g., state machine, regions and their annotations */
     if (state_aware_mode) is_interesting = update_state_aware_variables(q, 1);
 
+    SAYF("\n" cYEL "[stop_soon]" cRST "%d before save_kl_messages_to_file\n", stop_soon);
     /* save the seed to file for replaying */
     u8 *fn_replay = alloc_printf("%s/replayable-queue/%s", out_dir, basename(q->fname));
     save_kl_messages_to_file(kl_messages, fn_replay, 1, messages_sent);
     ck_free(fn_replay);
 
+    SAYF("\n" cYEL "[stop_soon]" cRST "%d before delete_kl_messages\n", stop_soon);
     /* AFLNet delete the kl_messages */
     delete_kl_messages(kl_messages);
-
+    
+    SAYF("\n" cYEL "[stop_soon]" cRST "%d\n", stop_soon);
     if (stop_soon) return;
 
     if (res == crash_mode || res == FAULT_NOBITS)
@@ -9340,7 +9347,9 @@ int main(int argc, char** argv) {
   else
     use_argv = argv + optind;
 
+  SAYF("\n" cYEL "[START]" cRST "perform_dry_run()\n");
   perform_dry_run(use_argv);
+  SAYF("\n" cYEL "[END]" cRST "perform_dry_run()\n");
   print_queue();
 
   cull_queue();

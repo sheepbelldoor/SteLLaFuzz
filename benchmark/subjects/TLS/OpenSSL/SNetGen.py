@@ -71,8 +71,8 @@ def main() -> None:
                 save_test_cases(test_case, output_dir)
 
         # 6. Generate dictionary
-        if True:
-            # 6.1. Generate dictionary
+        if False:
+            # 6.1. Generate disctionary
             fuzzing_dictionary = get_fuzzing_dictionary(protocol, dictionary_path, message_types)
             # 6.2. Save dictionary
             save_fuzzing_dictionary(fuzzing_dictionary, dictionary_path if dictionary_path else f"{protocol}.dict")

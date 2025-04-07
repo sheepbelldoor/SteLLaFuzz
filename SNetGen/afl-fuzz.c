@@ -3648,6 +3648,7 @@ static void perform_dry_run(char** argv) {
   struct queue_entry* q = queue;
   u32 cal_failures = 0;
   u8* skip_crashes = getenv("AFL_SKIP_CRASHES");
+  u8  attempt_again = 0; // if the is_interesting value is -1, we will attempt to dry run this test case again.
 
   while (q) {
 
@@ -3841,14 +3842,22 @@ static void perform_dry_run(char** argv) {
     if (is_interesting == 1) {
       SAYF(cLGN "[+] " cRST "Test case '%s' has interesting state sequence\n", fn);
       q = q->next;
+      attempt_again = 0;
     } else if (is_interesting == 0) {
       SAYF(cLRD "[-] " cRST "Test case '%s' has no interesting state, remove it from the queue\n", fn);
       struct queue_entry* remove_q = q;
       q = q->next;
       remove_from_queue(remove_q);
+      attempt_again = 0;
     } else {
-      SAYF(cLRD "[T.T] " cRST "This statement should not happen. in '%s'\n", fn);
-      q = q->next;
+      if (attempt_again == 0) {
+        SAYF(cLRD "[O.O] " cRST "This statement should not happen. in '%s'. return %d. Try again.\n", fn, is_interesting);
+        attempt_again = 1;
+      } else {
+        SAYF(cLRD "[T.T] " cRST "This statement should not happen. in '%s'. return %d. Move to the next test case.\n", fn, is_interesting);
+        q = q->next;
+        attempt_again = 0;
+      }
     }
 
   }

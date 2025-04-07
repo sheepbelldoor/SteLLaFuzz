@@ -760,12 +760,13 @@ struct queue_entry *choose_seed(u32 target_state_id, u8 mode)
 }
 
 /* Update state-aware variables */
-void update_state_aware_variables(struct queue_entry *q, u8 dry_run)
+int update_state_aware_variables(struct queue_entry *q, u8 dry_run)
 {
   khint_t k;
   int discard, i;
   state_info_t *state;
   unsigned int state_count;
+  int is_interesting = 0;
 
   if (!response_buf_size || !response_bytes) return;
 
@@ -774,6 +775,7 @@ void update_state_aware_variables(struct queue_entry *q, u8 dry_run)
   q->unique_state_count = get_unique_state_count(state_sequence, state_count);
 
   if (is_state_sequence_interesting(state_sequence, state_count)) {
+    is_interesting = 1;
     //Save the current kl_messages to a file which can be used to replay the newly discovered paths on the ipsm
     u8 *temp_str = state_sequence_to_string(state_sequence, state_count);
     u8 *fname = alloc_printf("%s/replayable-new-ipsm-paths/id:%llu:%s:%s", out_dir, get_cur_time() / 1000, temp_str, dry_run ? basename(q->fname) : "new");
@@ -983,6 +985,8 @@ void update_state_aware_variables(struct queue_entry *q, u8 dry_run)
 
   //Free state sequence
   if (state_sequence) ck_free(state_sequence);
+
+  return is_interesting;
 }
 
 /* Send (mutated) messages in order to the server under test */
@@ -3586,8 +3590,9 @@ static void perform_dry_run(char** argv) {
     res = calibrate_case(argv, q, use_mem, 0, 1);
     ck_free(use_mem);
 
+    int is_interesting = -1;
     /* Update state-aware variables (e.g., state machine, regions and their annotations */
-    if (state_aware_mode) update_state_aware_variables(q, 1);
+    if (state_aware_mode) is_interesting = update_state_aware_variables(q, 1);
 
     /* save the seed to file for replaying */
     u8 *fn_replay = alloc_printf("%s/replayable-queue/%s", out_dir, basename(q->fname));
@@ -3746,7 +3751,18 @@ static void perform_dry_run(char** argv) {
 
     if (q->var_behavior) WARNF("Instrumentation output varies across runs.");
 
-    q = q->next;
+    if (is_interesting == 1) {
+      SAYF(cLGN "[+] " cRST "Test case '%s' has interesting state sequence\n", fn);
+      q = q->next;
+    } else if (is_interesting == 0) {
+      SAYF(cLRD "[-] " cRST "Test case '%s' has no interesting state, remove it from the queue\n", fn);
+      // struct queue_entry* remove_q = q;
+      q = q->next;
+      // remove_from_queue(remove_q);
+    } else {
+      SAYF(cLRD "[T.T] " cRST "This statement should not happen. in '%s'\n", fn);
+      q = q->next;
+    }
 
   }
 

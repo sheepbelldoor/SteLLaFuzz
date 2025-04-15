@@ -81,7 +81,7 @@ def using_llm(prompt: str) -> ParsedMessages:
         print(f"Error processing protocol: {e}")
         return None
 
-def get_structured_seed_message(protocol: str, seed_message: str) -> None:
+def get_structured_seed_message(protocol: str, seed_message: str) -> dict:
     prompt = MESSAGE_PROMPT.replace("[PROTOCOL]", protocol)\
                            .replace("[SEED_MESSAGE]", seed_message)
     

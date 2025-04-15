@@ -1,3 +1,11 @@
+# SNetGen.py
+# 
+# 
+# 
+# 
+# 
+# python3 SNetGen.py --protocol <protocol> --output_dir <output_dir> --seed_messages <seed_messages_dir> --dictionary <dictionary_path: optional>
+
 import os
 import json
 import argparse

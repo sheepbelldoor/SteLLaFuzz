@@ -1,3 +1,11 @@
+# SNetGen.py
+# 
+# 
+# 
+# 
+# 
+# python3 SNetGen.py --protocol <protocol> --output_dir <output_dir> --seed_messages <seed_messages_dir> --dictionary <dictionary_path: optional>
+
 import os
 import json
 import argparse
@@ -72,7 +80,7 @@ def main() -> None:
 
         # 6. Generate dictionary
         if False:
-            # 6.1. Generate disctionary
+            # 6.1. Generate dictionary
             fuzzing_dictionary = get_fuzzing_dictionary(protocol, dictionary_path, message_types)
             # 6.2. Save dictionary
             save_fuzzing_dictionary(fuzzing_dictionary, dictionary_path if dictionary_path else f"{protocol}.dict")

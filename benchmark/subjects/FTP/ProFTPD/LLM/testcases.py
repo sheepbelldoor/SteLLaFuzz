@@ -22,35 +22,35 @@ class TestCase(BaseModel):
     sequences: List[Sequence]
 
 MESSAGE_PROMPT = """\
-You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to generate client-to-server message sequences for the [PROTOCOL] protocol based on the following inputs:
+You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to generate client-to-server message sequences for the [PROTOCOL] protocol using a Tree-of-Thoughts (ToT) approach based on the following inputs:
 
 1. **Seed Message:**
-   ```
-   [SEED_MESSAGE]
-   ```
-   (This is the existing, valid message loaded using the provided load_seed_messages function. The function reads seed messages from files and converts non-ASCII characters to their hex representation. The valid parameters present in these seed messages must be preserved in all generated sequences.)
+```
+[SEED_MESSAGE]
+```
+(This is the existing, valid message loaded using the provided load_seed_messages function. The function reads seed messages from files and converts non-ASCII characters to their hex representation. The valid parameters present in these seed messages must be preserved in all generated sequences.)
 
 2. **Type Sequence:**  
-   [SEQUENCE]
+[SEQUENCE]
 
 3. **Type Structure:**  
-   [STRUCTURE]
+[STRUCTURE]
 
 4. **Number of Message Sequences to Generate:**  
-   [NUMBER]
+[NUMBER]
 
 Please adhere to the following instructions:
 
 1. **Generate Messages for the Sequence:**
-   - MUST use the valid parameters from seed message as a baseline and preserve these values throughout the generated messages.
-   - Generate messages according to the order specified in the type sequence.
-   - Create [NUMBER] message sequences following the order specified in the type sequence.
-   - To increase diversity and maximize coverage, vary the message type sequence (e.g., by rearranging the order, repeating specific message types, or introducing edge-case scenarios) while keeping the valid parameters from seed message intact.
-   - If additional messages are needed, generate them according to the protocol specification using the preserved valid parameters.
-   - For binary-based protocols, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
-   - For text-based protocols, generate the message in plain ASCII text using spaces, newlines, or CRLF as needed according to the protocol specification.
-   - For each message in a sequence, map the message type to its corresponding structure from the type structure and generate realistic, concrete values for each defined field using the valid parameters from seed message.
-   - For each message, if is_binary is true, all messages MUST be written in a hex format separated by spaces.
+- You MUST use the valid parameters from the seed message as a baseline and preserve these values throughout the generated messages.
+- Generate messages according to the order specified in the type sequence.
+- Create [NUMBER] message sequences following the order specified in the type sequence.
+- To increase diversity and maximize coverage, vary the message type sequence (e.g., by rearranging the order, repeating specific message types, or introducing edge-case scenarios) while keeping the valid parameters from the seed message intact.
+- If additional messages are needed, generate them according to the protocol specification using the preserved valid parameters.
+- For binary-based protocols, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
+- For text-based protocols, generate the message in plain ASCII text using spaces, newlines, or CRLF as needed according to the protocol specification.
+- For each message in a sequence, map the message type to its corresponding structure from the type structure and generate realistic, concrete values for each defined field using the valid parameters from the seed message.
+- For each message, if is_binary is true, all messages MUST be written in hex format separated by spaces.
 
    **Example:**  
    For SMTP, an acceptable output would be:
@@ -91,41 +91,46 @@ Please adhere to the following instructions:
       ]
    }
    ```
-
+   
 2. **Ensure Maximum Coverage:**
-   - Design sequences to maximize coverage by including variations (e.g., repeated message types, edge-case values, error-triggering values) that exercise different protocol states and transitions.
-   - Include variations that account for both normal and exceptional conditions in the protocol.
+- Design sequences to maximize coverage by including variations (e.g., repeated message types, edge-case values, error-triggering values) that exercise different protocol states and transitions.
+- Include variations that account for both normal and exceptional conditions in the protocol.
 
 3. **Authoritative and Accurate:**
-   - Base the actual values strictly on the provided type structure.
-   - Use official documentation and RFC details from type structure to ensure correctness.
-   - Avoid subjective assumptions; rely solely on the provided inputs.
+- Base the actual values strictly on the provided type structure.
+- Use official documentation and RFC details from the type structure to ensure correctness.
+- Avoid subjective assumptions; rely solely on the provided inputs.
 
-4. **Step-by-Step Reasoning:**
-   - In the "explanation" field, include a clear, step-by-step explanation of how the sequences were generated.
-   - Describe the process of mapping each message type in sequence to its corresponding structure in type structure and how actual values were determined.
-   - Note any differences in handling text-based versus binary-based protocols.
-   - Explain how the valid parameters from seed message were preserved and utilized.
-   - Note any differences in handling text-based versus binary-based protocols.
+4. **Tree-of-Thoughts Reasoning and Candidate Generation:**
+- Internally generate and evaluate multiple candidate message sequences (i.e., branches of thought) that explore different valid orderings, conditional paths, loop constructs, and error handling scenarios.
+- For each candidate branch, analyze how variations in the message order, repetition, and specific detail parameters trigger distinct protocol states or transitions.
+- Internally compare these candidate branches to ensure that the selected sequences collectively maximize state coverage and uniquely exercise different protocol transitions.
+- Do not output the internal intermediate thought processes; only provide the final selected sequences that maximize protocol coverage.
 
-5. **Final Output Format:**
-   - The final output must be a JSON object with the following structure:
-     ```json
-     {
-       "protocol": "[PROTOCOL]",
-       "sequences": [
-         {
-           "sequenceId": "A unique identifier for the sequence",
-           "message_sequence": "Total messages in the sequence",
-           "explanation": "A step-by-step explanation of how the sequences were generated and the rationale behind the actual values selected.",
-           "is_binary": "True if the protocol is binary-based, False otherwise"
-         }
-         // ... additional sequence objects, up to [NUMBER] sequences
-       ]
-     }
-     ```
+5. **Step-by-Step Reasoning:**
+- In the "explanation" field, include a clear, step-by-step explanation of how the sequences were generated and the rationale behind the selected values.
+- Describe the process of mapping each message type in the sequence to its corresponding structure in the type structure and how the valid parameters from the seed message were preserved and utilized.
+- Explain any differences in handling text-based versus binary-based protocols.
+- Detail the Tree-of-Thoughts process used, describing how multiple candidate branches were generated, evaluated, and then consolidated into the final message sequences.
 
-Please generate multiple valid messages for [PROTOCOL] based on the above requirements and constraints.
+6. **Final Output Format:**
+- The final output MUST be a JSON object with the following structure:
+  ```json
+  {
+    "protocol": "[PROTOCOL]",
+    "sequences": [
+      {
+        "sequenceId": "A unique identifier for the sequence",
+        "message_sequence": "Total messages in the sequence",
+        "explanation": "A step-by-step explanation of how the sequences were generated and the rationale behind the actual values selected.",
+        "is_binary": "True if the protocol is binary-based, False otherwise"
+      }
+      // ... additional sequence objects, up to [NUMBER] sequences
+    ]
+  }
+  ```
+
+Please generate multiple valid message sequences for [PROTOCOL] based on the above requirements and constraints, ensuring all generated messages preserve the seed message's valid parameters while maximizing protocol state coverage through variations in message ordering, repetition, and conditional transitions.
 """
 
 

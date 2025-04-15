@@ -59,14 +59,15 @@ def main() -> None:
                 # message_sequences = json.load(open(f"message_sequence_results/{protocol}_message_sequences.json"))
                 # loop_message_sequences = json.load(open(f"message_sequence_results/{protocol}_loop_message_sequences.json"))
                 seed_index = 0
+                concatenated_seed_messages = ""
                 if seed_messages:
                     for seed_message in seed_messages:
                         structured_seed_message = get_structured_seed_message(protocol, seed_message)
-                        test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
+                        concatenated_seed_messages += f"[Seed {seed_index+1}]\n```json\n{structured_seed_message}\n```\n\n"
                         seed_index += 1
-                        if repetited_message_sequences:
-                            test_cases[seed_index] = get_test_cases(protocol, repetited_message_sequences, specialized_structures, structured_seed_message)
-                            seed_index += 1
+                    test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, concatenated_seed_messages)
+                    if repetited_message_sequences:
+                        test_cases[1] = get_test_cases(protocol, repetited_message_sequences, specialized_structures, concatenated_seed_messages)
                 else:
                     test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)
                     if repetited_message_sequences:

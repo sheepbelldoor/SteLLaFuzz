@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -27,9 +27,19 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
     pip install pydantic openai
     python3 enrich_corpus.py -o ${WORKDIR}/in-dns -p DNS
   fi
+  if [ $FUZZER = "snetgen" ]; then
+    pip install pydantic openai
+    cd ${WORKDIR}
+    python3 SNetGen.py -o ${WORKDIR}/in-dns -p DNS -s ${WORKDIR}/in-dns
+  fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/src
-  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5353 $OPTIONS ./dnsmasq
+  if [ $FUZZER = "snetgen" ]; then
+    # timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5353 -x ${WORKDIR}/DNS.dict $OPTIONS ./dnsmasq
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5353 $OPTIONS ./dnsmasq
+  else
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5353 $OPTIONS ./dnsmasq
+  fi
 
   STATUS=$?
 
@@ -49,6 +59,11 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   gcovr -r . --html --html-details -o index.html
   mkdir ${WORKDIR}/${TARGET_DIR}/src/${OUTDIR}/cov_html/
   cp *.html ${WORKDIR}/${TARGET_DIR}/src/${OUTDIR}/cov_html/
+
+  if [ $FUZZER = "snetgen" ]; then
+    cp -r ${WORKDIR}/in-dns ${WORKDIR}/${OUTDIR}/in-dns/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
+  fi
 
   #Step-3. Save the result to the ${WORKDIR} folder
   #Tar all results to a file

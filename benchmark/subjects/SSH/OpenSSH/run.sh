@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -26,6 +26,11 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   if [ $FUZZER = "chatafl-bin" ]; then
     pip3 install pydantic openai
     python3 enrich_corpus.py -o ${WORKDIR}/in-ssh -p SSH
+  fi
+  if [ $FUZZER = "snetgen" ]; then
+    pip3 install pydantic openai
+    cd ${WORKDIR}
+    python3 SNetGen.py -o ${WORKDIR}/in-ssh -p SSH -s ${WORKDIR}/in-ssh -d ${WORKDIR}/ssh.dict
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}
@@ -56,6 +61,11 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   gcovr -r . --html --html-details -o index.html
   mkdir ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/cov_html/
   cp *.html ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/cov_html/
+
+  if [ $FUZZER = "snetgen" ]; then
+    cp -r ${WORKDIR}/in-ssh ${WORKDIR}/${OUTDIR}/in-ssh/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
+  fi
 
   #Step-3. Save the result to the ${WORKDIR} folder
   #Tar all results to a file

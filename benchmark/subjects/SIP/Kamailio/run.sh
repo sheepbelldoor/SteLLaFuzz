@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -27,14 +27,22 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
     pip install pydantic openai
     python3 enrich_corpus.py -o ${WORKDIR}/in-sip -p SIP
   fi
+  if [ $FUZZER = "snetgen" ]; then
+    pip install pydantic openai
+    cd ${WORKDIR}
+    python3 SNetGen.py -o ${WORKDIR}/in-sip -p SIP -s ${WORKDIR}/in-sip
+  fi
   #Move to fuzzing folder
   export KAMAILIO_MODULES="src/modules"
   export KAMAILIO_RUNTIME_DIR="runtime_dir"
 
   cd $WORKDIR/${TARGET_DIR}
-
-  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
-
+  if [ $FUZZER = "snetgen" ]; then
+    # timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 -x ${WORKDIR}/SIP.dict $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
+  else
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
+  fi
   STATUS=$?
 
   #Step-2. Collect code coverage over time
@@ -54,6 +62,11 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   gcovr -r . --html --html-details -o index.html
   mkdir ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/cov_html/
   cp *.html ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/cov_html/
+
+  if [ $FUZZER = "snetgen" ]; then
+    cp -r ${WORKDIR}/in-sip ${WORKDIR}/${OUTDIR}/in-sip/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
+  fi
 
   #Step-3. Save the result to the ${WORKDIR} folder
   #Tar all results to a file

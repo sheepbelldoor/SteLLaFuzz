@@ -30,7 +30,7 @@ then
 fi
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -45,10 +45,19 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
     pip install pydantic openai
     python3 enrich_corpus.py -o ${WORKDIR}/in-daap -p DAAP
   fi
+  if [ $FUZZER = "snetgen" ]; then
+    pip install pydantic openai
+    cd ${WORKDIR}
+    python3 SNetGen.py -o ${WORKDIR}/in-daap -p DAAP -s ${WORKDIR}/in-daap
+  fi
   #Move to fuzzing folder
   cd $WORKDIR
-
-  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/3689 $OPTIONS ${WORKDIR}/${TARGET_DIR}/src/forked-daapd -d 0 -c ${WORKDIR}/forked-daapd.conf -f
+  if [ $FUZZER = "snetgen" ]; then
+    # timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/3689 -x ${WORKDIR}/DAAP.dict $OPTIONS ${WORKDIR}/${TARGET_DIR}/src/forked-daapd -d 0 -c ${WORKDIR}/forked-daapd.conf -f
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/3689 $OPTIONS ${WORKDIR}/${TARGET_DIR}/src/forked-daapd -d 0 -c ${WORKDIR}/forked-daapd.conf -f
+  else
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/3689 $OPTIONS ${WORKDIR}/${TARGET_DIR}/src/forked-daapd -d 0 -c ${WORKDIR}/forked-daapd.conf -f
+  fi
 
   STATUS=$?
 
@@ -68,7 +77,12 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   cd $WORKDIR/forked-daapd-gcov
   gcovr -r . --html --html-details -o index.html
   mkdir ${WORKDIR}/${OUTDIR}/cov_html/
-  cp *.html ${WORKDIR}/${OUTDIR}/cov_html/
+  cp *.html ${WORKDIR}/${OUTDIR}/cov_html/.
+
+  if [ $FUZZER = "snetgen" ]; then
+    cp -r ${WORKDIR}/in-daap ${WORKDIR}/${OUTDIR}/in-daap/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
+  fi
 
   #Step-3. Save the result to the ${WORKDIR} folder
   #Tar all results to a file

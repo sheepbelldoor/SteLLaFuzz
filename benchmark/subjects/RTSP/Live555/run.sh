@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
 
   TARGET_DIR=${TARGET_DIR:-"live"}
   INPUTS=${WORKDIR}/in-rtsp
@@ -26,6 +26,11 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   if [ $FUZZER = "chatafl-bin" ]; then
     pip install pydantic openai
     python3 enrich_corpus.py -o ${WORKDIR}/in-rtsp -p RTSP
+  fi
+  if [ $FUZZER = "snetgen" ]; then
+    pip install pydantic openai
+    cd ${WORKDIR}
+    python3 SNetGen.py -o ${WORKDIR}/in-rtsp -p RTSP -s ${WORKDIR}/in-rtsp -d ${WORKDIR}/rtsp.dict
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/testProgs
@@ -57,6 +62,11 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   gcovr -r .. --html --html-details -o index.html
   mkdir ${WORKDIR}/${TARGET_DIR}/testProgs/${OUTDIR}/cov_html/
   cp *.html ${WORKDIR}/live/testProgs/${OUTDIR}/cov_html/
+
+  if [ $FUZZER = "snetgen" ]; then
+    cp -r ${WORKDIR}/in-rtsp ${WORKDIR}/${OUTDIR}/in-rtsp/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
+  fi
 
   #Step-3. Save the result to the ${WORKDIR} folder
   #Tar all results to a file

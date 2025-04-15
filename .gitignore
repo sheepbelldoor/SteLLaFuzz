@@ -29,3 +29,4 @@ benchmark/subjects/*/*/chatafl-cl2
 benchmark/subjects/*/*/aflnet
 
 .vscode
+__pycache__

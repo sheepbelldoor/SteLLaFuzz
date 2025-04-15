@@ -11,7 +11,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -26,9 +26,19 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
     pip install pydantic openai
     python3 enrich_corpus.py -o ${WORKDIR}/in-dtls -p DTLS12
   fi
+  if [ $FUZZER = "snetgen" ]; then
+    pip install pydantic openai
+    cd ${WORKDIR}
+    python3 SNetGen.py -o ${WORKDIR}/in-dtls -p DTLS12 -s ${WORKDIR}/in-dtls
+  fi
   #Move to fuzzing folder
   cd $WORKDIR
-  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/20220 $OPTIONS ./${TARGET_DIR}/tests/dtls-server
+  if [ $FUZZER = "snetgen" ]; then
+    # timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/20220 -x ${WORKDIR}/DTLS12.dict $OPTIONS ./${TARGET_DIR}/tests/dtls-server
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/20220 $OPTIONS ./${TARGET_DIR}/tests/dtls-server
+  else
+    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/20220 $OPTIONS ./${TARGET_DIR}/tests/dtls-server
+  fi
 
   STATUS=$?
 
@@ -48,6 +58,11 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm"); then
   gcovr -r $WORKDIR/tinydtls-gcov --html --html-details -o index.html
   mkdir ${WORKDIR}/${OUTDIR}/cov_html/
   cp *.html ${WORKDIR}/${OUTDIR}/cov_html/
+
+  if [ $FUZZER = "snetgen" ]; then
+    cp -r ${WORKDIR}/in-dtls ${WORKDIR}/${OUTDIR}/in-dtls/
+    cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
+  fi
 
   #Step-3. Save the result to the ${WORKDIR} folder
   #Tar all results to a file

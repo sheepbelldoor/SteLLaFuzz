@@ -627,12 +627,12 @@ do
 
             if [[ $FUZZER == "aflnet" ]] || [[ $FUZZER == "all" ]]
             then
-                profuzzbench_exec_common.sh openssl $NUM_CONTAINERS results-openssl aflnet out-openssl-aflnet "-P TLS -D 200000 -m none -q 3 -s 3 -E -K -R -t ${TEST_TIMEOUT}+" $TIMEOUT $SKIPCOUNT &
+                profuzzbench_exec_common.sh openssl $NUM_CONTAINERS results-openssl aflnet out-openssl-aflnet "-P TLS -D 200000 -m none -q 3 -s 3 -E -K -R -W 100 -t ${TEST_TIMEOUT}+" $TIMEOUT $SKIPCOUNT &
             fi
 
             if [[ $FUZZER == "chatafl" ]] || [[ $FUZZER == "all" ]]
             then
-                profuzzbench_exec_common.sh openssl $NUM_CONTAINERS results-openssl chatafl out-openssl-chatafl "-P TLS -D 200000 -m none -q 3 -s 3 -E -K -R -t ${TEST_TIMEOUT}+" $TIMEOUT $SKIPCOUNT &
+                profuzzbench_exec_common.sh openssl $NUM_CONTAINERS results-openssl chatafl out-openssl-chatafl "-P TLS -D 200000 -m none -q 3 -s 3 -E -K -R -W 100 -t ${TEST_TIMEOUT}+" $TIMEOUT $SKIPCOUNT &
             fi
 
             if [[ $FUZZER == "chatafl-cl1" ]] || [[ $FUZZER == "all" ]]
@@ -657,7 +657,7 @@ do
 
             if [[ $FUZZER == "snetgen" ]] || [[ $FUZZER == "all" ]]
             then
-                profuzzbench_exec_common.sh openssl $NUM_CONTAINERS results-openssl snetgen out-openssl-snetgen "-P TLS -D 200000 -m none -q 3 -s 3 -E -K -R -t ${TEST_TIMEOUT}+" $TIMEOUT $SKIPCOUNT &
+                profuzzbench_exec_common.sh openssl $NUM_CONTAINERS results-openssl snetgen out-openssl-snetgen "-P TLS -D 200000 -m none -q 3 -s 3 -E -K -R -W 100 -t ${TEST_TIMEOUT}+" $TIMEOUT $SKIPCOUNT &
             fi
 
         fi

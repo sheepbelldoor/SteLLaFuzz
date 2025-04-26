@@ -56,6 +56,6 @@ cd $PFBENCH
 cd subjects/SSH/OpenSSH
 docker build . -t openssh --build-arg MAKE_OPT $NO_CACHE
 
-# cd $PFBENCH
-# cd subjects/TLS/OpenSSL
-# docker build . -t openssl --build-arg MAKE_OPT $NO_CACHE
+cd $PFBENCH
+cd subjects/TLS/OpenSSL
+docker build . -t openssl --build-arg MAKE_OPT $NO_CACHE

@@ -117,7 +117,7 @@ def using_llm(prompt: str) -> StructuredOutput:
 def get_specialized_structure(protocol: str, message_type: dict) -> None:
     prompt = PROTOCOL_SPECIALIZED_STRUCTURE_PROMPT.replace("[PROTOCOL]", protocol)\
                                                   .replace("[TYPE]", message_type["name"])\
-                                                  .replace("[CODE]", message_type["code"])\
+                                                  .replace("[CODE]", message_type["code"] if message_type["code"] else "NULL")\
                                                   .replace("[DESCRIPTION]", message_type["description"])
     
     for _ in range(LLM_RETRY):

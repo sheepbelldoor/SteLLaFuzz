@@ -63,6 +63,10 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   mkdir ${WORKDIR}/${TARGET_DIR}/testProgs/${OUTDIR}/cov_html/
   cp *.html ${WORKDIR}/live/testProgs/${OUTDIR}/cov_html/
 
+  if [ $FUZZER = "chatafl" ]; then
+    cp -r ${WORKDIR}/answers ${WORKDIR}/${TARGET_DIR}/live/testProgs/${OUTDIR}/answers/
+  fi
+
   if [ $FUZZER = "snetgen" ]; then
     cp -r ${WORKDIR}/in-rtsp ${WORKDIR}/live/testProgs/${OUTDIR}/in-rtsp/
     cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/live/testProgs/${OUTDIR}/llm_outputs/

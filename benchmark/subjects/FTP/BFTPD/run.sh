@@ -55,6 +55,10 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   mkdir ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/cov_html/
   cp *.html ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/cov_html/
 
+  if [ $FUZZER = "chatafl" ]; then
+    cp -r ${WORKDIR}/answers ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/answers/
+  fi
+
   if [ $FUZZER = "snetgen" ]; then
     cp -r ${WORKDIR}/in-ftp ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/in-ftp/
     cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/llm_outputs/

@@ -50,6 +50,8 @@ char *chat_with_llm(char *prompt, char *model, int tries, float temperature)
     char *answer = NULL;
     char *url = NULL;
 
+    char *whole_answer = NULL;
+
     url = "https://api.openai.com/v1/chat/completions";
     char *auth_header = "Authorization: Bearer " OPENAI_TOKEN;
     char *content_header = "Content-Type: application/json";
@@ -57,11 +59,11 @@ char *chat_with_llm(char *prompt, char *model, int tries, float temperature)
     char *data = NULL;
     if (strcmp(model, "instruct") == 0)
     {
-        asprintf(&data, "{\"model\": \"gpt-4o-mini\", \"messages\": [{\"role\": \"system\", \"content\": \"You are a helpful assistant.\"}, {\"role\": \"user\", \"content\": \"%s\"}], \"max_tokens\": %d, \"temperature\": %f}", prompt, MAX_OUTPUT_TOKENS, temperature);
+        asprintf(&data, "{\"model\": \"gpt-4o\", \"messages\": [{\"role\": \"system\", \"content\": \"You are a helpful assistant.\"}, {\"role\": \"user\", \"content\": \"%s\"}], \"max_tokens\": %d, \"temperature\": %f}", prompt, MAX_OUTPUT_TOKENS, temperature);
     }
     else
     {
-        asprintf(&data, "{\"model\": \"gpt-4o-mini\",\"messages\": %s, \"max_tokens\": %d, \"temperature\": %f}", prompt, MAX_OUTPUT_TOKENS, temperature);
+        asprintf(&data, "{\"model\": \"gpt-4o\",\"messages\": %s, \"max_tokens\": %d, \"temperature\": %f}", prompt, MAX_OUTPUT_TOKENS, temperature);
     }
     curl_global_init(CURL_GLOBAL_DEFAULT);
     do
@@ -94,6 +96,12 @@ char *chat_with_llm(char *prompt, char *model, int tries, float temperature)
                 // Check if the "choices" key exists
                 if (json_object_object_get_ex(jobj, "choices", NULL))
                 {
+                    const char *whole_data;
+                    whole_data = json_object_get_string(jobj);
+                    if (whole_data[0] == '\n')
+                        whole_data++;
+                    whole_answer = strdup(whole_data);
+
                     json_object *choices = json_object_object_get(jobj, "choices");
                     json_object *first_choice = json_object_array_get_idx(choices, 0);
                     const char *data;
@@ -130,6 +138,30 @@ char *chat_with_llm(char *prompt, char *model, int tries, float temperature)
     }
 
     curl_global_cleanup();
+
+    // Save the answer to a file
+    if (whole_answer != NULL)
+    {
+        int index = 0;
+        char *file_name = NULL;
+        // Make a directory for the answers
+        mkdir("/home/ubuntu/experiments/answers", 0755);
+        asprintf(&file_name, "/home/ubuntu/experiments/answers/answer-%d.txt", index++);
+        // Check the file exists until it does not exist
+        while (access(file_name, F_OK) != -1)
+        {
+            free(file_name);
+            asprintf(&file_name, "/home/ubuntu/experiments/answers/answer-%d.txt", index++);
+        }
+        FILE *file = fopen(file_name, "w");
+        if (file != NULL)
+        {
+            fputs(whole_answer, file);
+            fclose(file);
+            free(file_name);
+        }
+    }
+
     return answer;
 }
 

@@ -71,9 +71,17 @@ def main() -> None:
                 save_test_cases(test_case, output_dir)
 
         # 6. Generate dictionary
-        if False:
+        if True:
+            # 6.0. Load seed messages
+            constructed_seed_messages = ""
+            seed_index = 1
+            for seed_message in seed_messages:
+                constructed_seed_messages += f"Seed Message {seed_index}:\n{seed_message}\n\n"
+                seed_index += 1
+            # print(constructed_seed_messages)
             # 6.1. Generate dictionary
-            fuzzing_dictionary = get_fuzzing_dictionary(protocol, dictionary_path, message_types)
+            # message_types = json.load(open(f"protocol_type_results/{protocol}_types.json"))
+            fuzzing_dictionary = get_fuzzing_dictionary(protocol, dictionary_path, message_types, constructed_seed_messages)
             # 6.2. Save dictionary
             save_fuzzing_dictionary(fuzzing_dictionary, dictionary_path if dictionary_path else f"{protocol}.dict")
     

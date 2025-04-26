@@ -76,6 +76,13 @@ def using_llm(prompt: str) -> ParsedMessages:
         )   
         response = completion.choices[0].message.parsed
 
+        index = 0
+        os.makedirs(os.path.join(LLM_RESULT_DIR, "5_structured_seed_message"), exist_ok=True)
+        while os.path.exists(os.path.join(LLM_RESULT_DIR, "5_structured_seed_message", f"response_{index}.json")):
+            index += 1
+        protocol_file = os.path.join(LLM_RESULT_DIR, "5_structured_seed_message", f"response_{index}.json")
+        with open(protocol_file, "w", encoding="utf-8") as f:
+            json.dump(completion.model_dump(), f, indent=4, ensure_ascii=False)
         return response
     except Exception as e:
         print(f"Error processing protocol: {e}")

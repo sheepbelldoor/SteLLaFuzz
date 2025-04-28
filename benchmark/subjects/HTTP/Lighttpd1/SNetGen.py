@@ -71,7 +71,7 @@ def main() -> None:
                 save_test_cases(test_case, output_dir)
 
         # 6. Generate dictionary
-        if False:
+        if True:
             # 6.0. Load seed messages
             constructed_seed_messages = ""
             seed_index = 1

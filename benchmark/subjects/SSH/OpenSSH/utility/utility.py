@@ -5,7 +5,7 @@ from typing import List
 from pprint import pprint
 import re
 
-MODEL = "gpt-4o"
+MODEL = "gpt-4o-mini"
 LLM_RESULT_DIR = "llm_outputs"
 TEST_MESSAGE_DIR = os.path.join(LLM_RESULT_DIR, "messages")
 SEQUENCE_REPEAT = 1

@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "stellafuzz"); then
 
   TARGET_DIR=${TARGET_DIR:-"live"}
   INPUTS=${WORKDIR}/in-rtsp
@@ -23,14 +23,10 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   fi
 
   #Step-1. Do Fuzzing
-  if [ $FUZZER = "chatafl-bin" ]; then
-    pip install pydantic openai
-    python3 enrich_corpus.py -o ${WORKDIR}/in-rtsp -p RTSP
-  fi
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     pip install pydantic openai
     cd ${WORKDIR}
-    python3 SNetGen.py -o ${WORKDIR}/in-rtsp -p RTSP -s ${WORKDIR}/in-rtsp -d ${WORKDIR}/rtsp.dict
+    python3 stellafuzz.py -o ${WORKDIR}/in-rtsp -p RTSP -s ${WORKDIR}/in-rtsp
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/testProgs
@@ -67,7 +63,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
     cp -r ${WORKDIR}/answers ${WORKDIR}/${TARGET_DIR}/live/testProgs/${OUTDIR}/answers/
   fi
 
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     cp -r ${WORKDIR}/in-rtsp ${WORKDIR}/live/testProgs/${OUTDIR}/in-rtsp/
     cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/live/testProgs/${OUTDIR}/llm_outputs/
   fi

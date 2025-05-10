@@ -39,7 +39,6 @@ cd $PFBENCH
 cd subjects/HTTP/Lighttpd1
 docker build . -t lighttpd1 --build-arg MAKE_OPT $NO_CACHE
 
-# Added target protocol implementation
 cd $PFBENCH
 cd subjects/DICOM/Dcmtk
 docker build . -t dcmtk --build-arg MAKE_OPT $NO_CACHE

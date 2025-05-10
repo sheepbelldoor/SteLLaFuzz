@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "stellafuzz"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -23,23 +23,14 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   INPUTS=${INPUTS:-${WORKDIR}"/in-dicom"}
 
   #Step-1. Do Fuzzing
-  if [ $FUZZER = "chatafl-bin" ]; then
-    pip install pydantic openai
-    python3 enrich_corpus.py -o ${WORKDIR}/in-dicom -p DICOM
-  fi
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     pip install pydantic openai
     cd ${WORKDIR}
-    python3 SNetGen.py -o ${WORKDIR}/in-dicom -p DICOM -s ${WORKDIR}/in-dicom
+    python3 stellafuzz.py -o ${WORKDIR}/in-dicom -p DICOM -s ${WORKDIR}/in-dicom
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/build/bin
-  if [ $FUZZER = "snetgen" ]; then
-    # timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/5158 -x ${WORKDIR}/DICOM.dict $OPTIONS -c ${WORKDIR}/clean ./dcmqrscp --single-process
-    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/5158 $OPTIONS -c ${WORKDIR}/clean ./dcmqrscp --single-process
-  else
-    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/5158 $OPTIONS -c ${WORKDIR}/clean ./dcmqrscp --single-process
-  fi
+  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N tcp://127.0.0.1/5158 $OPTIONS -c ${WORKDIR}/clean ./dcmqrscp --single-process
 
   STATUS=$?
 
@@ -64,7 +55,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
     cp -r ${WORKDIR}/answers ${WORKDIR}/${TARGET_DIR}/build/bin/${OUTDIR}/answers/
   fi
 
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     cp -r ${WORKDIR}/in-dicom ${WORKDIR}/${TARGET_DIR}/build/bin/${OUTDIR}/in-dicom/
     cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${TARGET_DIR}/build/bin/${OUTDIR}/llm_outputs/
   fi

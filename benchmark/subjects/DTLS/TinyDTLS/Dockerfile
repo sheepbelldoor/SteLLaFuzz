@@ -54,28 +54,8 @@ RUN cd chatafl && \
     make clean all $MAKE_OPT && \
     cd llvm_mode && make $MAKE_OPT
 
-COPY --chown=ubuntu:ubuntu chatafl-cl1 chatafl-cl1
-RUN cd chatafl-cl1 && \
-    make clean all $MAKE_OPT && \
-    cd llvm_mode && make $MAKE_OPT
-
-COPY --chown=ubuntu:ubuntu chatafl-cl2 chatafl-cl2
-RUN cd chatafl-cl2 && \
-    make clean all $MAKE_OPT && \
-    cd llvm_mode && make $MAKE_OPT
-
-COPY --chown=ubuntu:ubuntu chatafl-seed chatafl-seed
-RUN cd chatafl-seed && \
-    make clean all $MAKE_OPT && \
-    cd llvm_mode && make $MAKE_OPT
-
-COPY --chown=ubuntu:ubuntu chatafl-bin chatafl-bin
-RUN cd chatafl-bin && \
-    make clean all $MAKE_OPT && \
-    cd llvm_mode && make $MAKE_OPT
-
-COPY --chown=ubuntu:ubuntu snetgen snetgen
-RUN cd snetgen && \
+COPY --chown=ubuntu:ubuntu stellafuzz stellafuzz
+RUN cd stellafuzz && \
     make clean all $MAKE_OPT && \
     cd llvm_mode && make $MAKE_OPT
     
@@ -121,7 +101,6 @@ RUN cd $WORKDIR && \
 COPY --chown=ubuntu:ubuntu in-dtls ${WORKDIR}/in-dtls
 COPY --chown=ubuntu:ubuntu cov_script.sh ${WORKDIR}/cov_script
 COPY --chown=ubuntu:ubuntu run.sh ${WORKDIR}/run
-COPY --chown=ubuntu:ubuntu enrich_corpus.py ${WORKDIR}/enrich_corpus.py
-COPY --chown=ubuntu:ubuntu SNetGen.py ${WORKDIR}/SNetGen.py
+COPY --chown=ubuntu:ubuntu stellafuzz.py ${WORKDIR}/stellafuzz.py
 COPY --chown=ubuntu:ubuntu utility ${WORKDIR}/utility
 COPY --chown=ubuntu:ubuntu LLM ${WORKDIR}/LLM

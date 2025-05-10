@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "stellafuzz"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -23,14 +23,10 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   INPUTS=${INPUTS:-"${WORKDIR}/in-ftp"}
 
   #Step-1. Do Fuzzing
-  if [ $FUZZER = "chatafl-bin" ]; then
-    pip install pydantic openai
-    python3 enrich_corpus.py -o ${WORKDIR}/in-ftp -p FTP
-  fi
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     pip install pydantic openai
     cd ${WORKDIR}
-    python3 SNetGen.py -o ${WORKDIR}/in-ftp -p FTP -s ${WORKDIR}/in-ftp -d ${WORKDIR}/ftp.dict
+    python3 stellafuzz.py -o ${WORKDIR}/in-ftp -p FTP -s ${WORKDIR}/in-ftp
   fi
   #Move to fuzzing folder
   cd $WORKDIR/${TARGET_DIR}/Source/Release
@@ -60,7 +56,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
     cp -r ${WORKDIR}/answers ${WORKDIR}/${TARGET_DIR}/Source/Release/${OUTDIR}/answers/
   fi
 
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     cp -r ${WORKDIR}/in-ftp ${WORKDIR}/${TARGET_DIR}/Source/Release/${OUTDIR}/in-ftp/
     cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${TARGET_DIR}/Source/Release/${OUTDIR}/llm_outputs/
   fi

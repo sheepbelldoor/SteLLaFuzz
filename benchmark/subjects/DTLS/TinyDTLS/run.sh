@@ -11,7 +11,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "stellafuzz"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -22,18 +22,14 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   INPUTS=${INPUTS:-${WORKDIR}"/in-dtls"}
 
   #Step-1. Do Fuzzing
-  if [ $FUZZER = "chatafl-bin" ]; then
-    pip install pydantic openai
-    python3 enrich_corpus.py -o ${WORKDIR}/in-dtls -p DTLS12
-  fi
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     pip install pydantic openai
     cd ${WORKDIR}
-    python3 SNetGen.py -o ${WORKDIR}/in-dtls -p DTLS12 -s ${WORKDIR}/in-dtls
+    python3 stellafuzz.py -o ${WORKDIR}/in-dtls -p DTLS12 -s ${WORKDIR}/in-dtls
   fi
   #Move to fuzzing folder
   cd $WORKDIR
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     # timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/20220 -x ${WORKDIR}/DTLS12.dict $OPTIONS ./${TARGET_DIR}/tests/dtls-server
     timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/20220 $OPTIONS ./${TARGET_DIR}/tests/dtls-server
   else
@@ -63,7 +59,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
     cp -r ${WORKDIR}/answers ${WORKDIR}/${OUTDIR}/answers/
   fi
 
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     cp -r ${WORKDIR}/in-dtls ${WORKDIR}/${OUTDIR}/in-dtls/
     cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${OUTDIR}/llm_outputs/
   fi

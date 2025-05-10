@@ -12,7 +12,7 @@ strstr() {
 }
 
 #Commands for afl-based fuzzers (e.g., aflnet, aflnwe)
-if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetgen"); then
+if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "stellafuzz"); then
 
   # Run fuzzer-specific commands (if any)
   if [ -e ${WORKDIR}/run-${FUZZER} ]; then
@@ -23,26 +23,17 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
   INPUTS=${INPUTS:-${WORKDIR}"/in-sip"}
 
   #Step-1. Do Fuzzing
-  if [ $FUZZER = "chatafl-bin" ]; then
-    pip install pydantic openai
-    python3 enrich_corpus.py -o ${WORKDIR}/in-sip -p SIP
-  fi
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     pip install pydantic openai
     cd ${WORKDIR}
-    python3 SNetGen.py -o ${WORKDIR}/in-sip -p SIP -s ${WORKDIR}/in-sip
+    python3 stellafuzz.py -o ${WORKDIR}/in-sip -p SIP -s ${WORKDIR}/in-sip
   fi
   #Move to fuzzing folder
   export KAMAILIO_MODULES="src/modules"
   export KAMAILIO_RUNTIME_DIR="runtime_dir"
 
   cd $WORKDIR/${TARGET_DIR}
-  if [ $FUZZER = "snetgen" ]; then
-    # timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 -x ${WORKDIR}/SIP.dict $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
-    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
-  else
-    timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
-  fi
+  timeout -k 2s --preserve-status $TIMEOUT /home/ubuntu/${FUZZER}/afl-fuzz -d -i ${INPUTS} -o $OUTDIR -N udp://127.0.0.1/5060 $OPTIONS -c ${WORKDIR}/run_pjsip ./src/kamailio -f ${WORKDIR}/kamailio-basic.cfg -L $KAMAILIO_MODULES -Y $KAMAILIO_RUNTIME_DIR -n 1 -D -E
   STATUS=$?
 
   #Step-2. Collect code coverage over time
@@ -67,7 +58,7 @@ if $(strstr $FUZZER "afl") || $(strstr $FUZZER "llm") || $(strstr $FUZZER "snetg
     cp -r ${WORKDIR}/answers ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/answers/
   fi
   
-  if [ $FUZZER = "snetgen" ]; then
+  if [ $FUZZER = "stellafuzz" ]; then
     cp -r ${WORKDIR}/in-sip ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/in-sip/
     cp -r ${WORKDIR}/llm_outputs ${WORKDIR}/${TARGET_DIR}/${OUTDIR}/llm_outputs/
   fi

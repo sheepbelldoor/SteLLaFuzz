@@ -167,28 +167,9 @@ Edit `benchmark/subjects/<subject>/utility/utility.py` to experiment with more a
 
 ---
 
-## 🛠 Extending SteLLaFuzz
-
-1. **Add a new protocol**
-
-   * Drop server code & corpus under `benchmark/subjects/<your-subject>/`.
-   * Provide a minimal interaction trace (`traces/seed.pcap`) – SteLLaFuzz will infer types and sequences automatically.
-
-2. **Swap the LLM**
-
-   * Pass `MODEL=<id>` to Docker at build time or override in the utility file.
-   * The prompt format follows the JSON schemas published in the repo, so any model with JSON mode support can be integrated.
-
-3. **Custom analysis**
-
-   * All raw statistics are exported as CSV; use pandas/matplotlib or any BI tool to craft bespoke dashboards.([Pandas][4], [matplotlib.org][5])
-
----
-
-## 📝 License & Citation
+## 📝 License
 
 The code is released under the **Apache 2.0** license.([apache.org][8])
-If you use SteLLaFuzz in academic work, please cite the ASE 2025 paper (BibTeX entry forthcoming).
 
 ---
 

@@ -100,7 +100,7 @@ This artifact is licensed under the Apache License 2.0 - see the [LICENSE](./LIC
 ---
 # Version 2
 # SteLLaFuzz
-SteLLaFuzz is a **structure-guided LLM-based network-protocol fuzzer**.  By combining AFLNet’s state-feedback engine with a light-weight LLM assistant, it automatically learns message grammars and legal interaction sequences from a handful of raw traces, then synthesises *protocol-conformant* seeds that drive deeper code paths and state transitions than mutation-only fuzzers such as AFLNet or its LLM sibling ChatAFL.([GitHub][1], [GitHub][2])
+SteLLaFuzz is a structure-guided fuzzing framework that leverages large language models (LLMs) to generate protocol-aware seed inputs for testing network protocol implementations. Unlike conventional fuzzers that rely on random mutations or fixed dictionaries, SteLLaFuzz automatically extracts message types, structural formats, and valid sequences from raw seed messages, enabling it to generate semantically valid and structurally diverse inputs.
 
 ---
 

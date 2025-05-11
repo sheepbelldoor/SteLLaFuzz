@@ -62,34 +62,43 @@ def main(csv_file, put, runs, cut_off, step, out_file, fuzzers):
   fig.suptitle("Code coverage analysis")
 
   for key, grp in mean_df.groupby(['fuzzer', 'cov_type']):
+    fuzzer_name = key[0]
     if key[1] == 'b_abs':
-      axes[0, 0].plot(grp['time'], grp['cov'])
-      #axes[0, 0].set_title('Edge coverage over time (#edges)')
+      axes[0, 0].plot(grp['time'], grp['cov'], label=fuzzer_name)
+      axes[0, 0].set_title('Edge coverage over time (#edges)')
       axes[0, 0].set_xlabel('Time (in min)')
       axes[0, 0].set_ylabel('#edges')
     if key[1] == 'b_per':
-      axes[1, 0].plot(grp['time'], grp['cov'])
-      #axes[1, 0].set_title('Edge coverage over time (%)')
+      axes[1, 0].plot(grp['time'], grp['cov'], label=fuzzer_name)
+      axes[1, 0].set_title('Edge coverage over time (%)')
       axes[1, 0].set_ylim([0,100])
       axes[1, 0].set_xlabel('Time (in min)')
       axes[1, 0].set_ylabel('Edge coverage (%)')
     if key[1] == 'l_abs':
-      axes[0, 1].plot(grp['time'], grp['cov'])
-      #axes[0, 1].set_title('Line coverage over time (#lines)')
+      axes[0, 1].plot(grp['time'], grp['cov'], label=fuzzer_name)
+      axes[0, 1].set_title('Line coverage over time (#lines)')
       axes[0, 1].set_xlabel('Time (in min)')
       axes[0, 1].set_ylabel('#lines')
     if key[1] == 'l_per':
-      axes[1, 1].plot(grp['time'], grp['cov'])
-      #axes[1, 1].set_title('Line coverage over time (%)')
+      axes[1, 1].plot(grp['time'], grp['cov'], label=fuzzer_name)
+      axes[1, 1].set_title('Line coverage over time (%)')
       axes[1, 1].set_ylim([0,100])
       axes[1, 1].set_xlabel('Time (in min)')
       axes[1, 1].set_ylabel('Line coverage (%)')
 
-  fig.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
-  plt.tight_layout()
+  # Add legend to each subplot
+  for ax in axes.flat:
+    ax.legend()
+  
+  # Or add a single legend for the entire figure (optional)
+  # handles, labels = plt.gca().get_legend_handles_labels()
+  # by_label = dict(zip(labels, handles))
+  # fig.legend(by_label.values(), by_label.keys(), loc='center left', bbox_to_anchor=(1.0, 0.5))
+  
+  plt.tight_layout(pad=3.0)
 
   #Save to file
-  plt.savefig(out_file)
+  plt.savefig(out_file, bbox_inches='tight', pad_inches=0.5)
 
 # Parse the input arguments
 if __name__ == '__main__':

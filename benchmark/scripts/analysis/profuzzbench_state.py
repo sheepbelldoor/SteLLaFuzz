@@ -63,11 +63,11 @@ def main(csv_file, put, runs, cut_off, step, out_file, fuzzers):
   fig.suptitle("State coverage analysis", fontsize=20)
 
   ylim = 0
-  lines = []  # legend를 위한 line 객체들을 저장
+  lines = []
   for key, grp in mean_df.groupby(['fuzzer', 'data_type']):
     if key[1] == 'nodes':
       line = axes[0].plot(grp['time'], grp['data'])
-      lines.extend(line)  # line 객체 저장
+      lines.extend(line)
       axes[0].set_xlabel('Time (in min)')
       axes[0].set_ylabel('#nodes')
     if key[1] == 'edges':
@@ -81,10 +81,8 @@ def main(csv_file, put, runs, cut_off, step, out_file, fuzzers):
   for ax in fig.axes:
     ax.grid()
 
-  # figure 레벨에서 하나의 legend 추가
   fig.legend(lines[:len(fuzzers)], fuzzers, loc='center left', bbox_to_anchor=(1.0, 0.5))
   
-  # subplot 간격 조절하여 legend 공간 확보
   plt.tight_layout()
 
   #Save to file

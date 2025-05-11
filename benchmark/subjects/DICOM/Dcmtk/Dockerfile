@@ -73,6 +73,7 @@ ENV OPENAI_API_KEY="1"
 RUN mkdir $WORKDIR
 
 USER root
+RUN apt-get update
 RUN apt-get -y install cmake
 
 COPY --chown=ubuntu:ubuntu fuzzing.patch ${WORKDIR}/fuzzing.patch

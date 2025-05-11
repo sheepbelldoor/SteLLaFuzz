@@ -10,7 +10,6 @@ TESTCASE_OUTPUT_DIR = "testcase_results"
 
 class Message(BaseModel):
     message: str
-    # is_binary: bool
 
 class Sequence(BaseModel):
     sequenceId: str
@@ -22,7 +21,8 @@ class TestCase(BaseModel):
     sequences: List[Sequence]
 
 MESSAGE_PROMPT = """\
-You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to generate client-to-server message sequences for the [PROTOCOL] protocol based on the following inputs:
+You are a network protocol expert with deep understanding of [PROTOCOL].
+Your task is to generate client-to-server message sequences for the [PROTOCOL] protocol based on the following inputs:
 
 1. **Seed Message:**
    ```
@@ -125,7 +125,7 @@ Please adhere to the following instructions:
      }
      ```
 
-Please generate multiple valid messages for [PROTOCOL] based on the above requirements and constraints.
+Please generate multiple valid messages for [PROTOCOL] based on the above instructions.
 """
 
 
@@ -201,7 +201,6 @@ def get_test_cases(protocol: str, message_sequences: dict, specialized_structure
         except Exception as e:
             print(f"Error processing message sequence {sequence['sequenceId']} in {protocol}: {e}")
     
-    # Save the results to a JSON file
     os.makedirs(TESTCASE_OUTPUT_DIR, exist_ok=True)
     idx = 1
     file_path = os.path.join(TESTCASE_OUTPUT_DIR, f"{protocol.lower()}_testcases_{idx}.json")

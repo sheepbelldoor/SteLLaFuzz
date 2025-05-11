@@ -11,7 +11,7 @@ PROTOCOL_TYPE_OUTPUT_DIR = "protocol_type_results"
 class MessageType(BaseModel):
     name: str                               # Message type name (e.g., DISCONNECT, KEXINIT)
     code: Optional[str] = None              # Code of the message type
-    description: str                        # Brief description of the message type
+    description: str                        # Brief description of the message 
 
 class ProtocolMessageTypes(BaseModel):
     protocol: str                                               # Protocol name (e.g., SSH, HTTP)
@@ -21,7 +21,8 @@ class ProtocolMessageTypes(BaseModel):
     notes: Optional[str] = None                                 # Considerations for future extensibility or additional notes
 
 PROTOCOL_TYPE_PROMPT = """\
-You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to extract all defined client-to-server message types in the [PROTOCOL] protocol, including any extended or optional commands as defined in official documentation or recognized RFC extensions.
+You are a network protocol expert with deep understanding of [PROTOCOL].
+Your task is to extract all defined client-to-server message types in the [PROTOCOL] protocol, including any extended or optional commands as defined in official documentation or recognized RFC extensions.
 
 Please adhere to the following instructions:
 
@@ -82,7 +83,7 @@ Please adhere to the following instructions:
      - [TYPE_Y]: Might be part of an extended version of the protocol.
      ```
 
-Please extract and list all client-to-server message types for [PROTOCOL] following the above constraints and examples.
+Please extract all client-to-server message types for [PROTOCOL] following the above instructions.
 """
 
 def using_llm(prompt: str) -> ProtocolMessageTypes:
@@ -123,14 +124,12 @@ def get_protocol_message_types(protocol: str) -> dict:
     if response is None:
         raise Exception(f"Failed to generate message types for {protocol}")
 
-    # Save the individual protocol result to a JSON file
     os.makedirs(PROTOCOL_TYPE_OUTPUT_DIR, exist_ok=True)    
     protocol_file = os.path.join(PROTOCOL_TYPE_OUTPUT_DIR, f"{protocol.lower()}_types.json")
     with open(protocol_file, "w", encoding="utf-8") as f:
         json.dump(response.model_dump(), f, indent=4, ensure_ascii=False)
     print(f"Saved results for {protocol} to {protocol_file}")
 
-    # Save the individual protocol result to a JSON file
     os.makedirs(LLM_RESULT_DIR, exist_ok=True)    
     protocol_file = os.path.join(LLM_RESULT_DIR, f"1_{protocol.lower()}_types.json")
     with open(protocol_file, "w", encoding="utf-8") as f:

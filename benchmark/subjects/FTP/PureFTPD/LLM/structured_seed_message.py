@@ -9,56 +9,55 @@ from utility.utility import MODEL, LLM_RETRY, LLM_RESULT_DIR, SEQUENCE_REPEAT
 STRUCTURED_SEED_MESSAGE_OUTPUT_DIR = "structured_seed_message_results"
 
 class Message(BaseModel):
-    """
-    Represents a single parsed message chunk.
-    """
     message: str
 
 class ParsedMessages(BaseModel):
-    """
-    A container for multiple parsed messages.
-    """
     message_sequences: List[Message]
 
 MESSAGE_PROMPT = """\
-You are a highly capable [PROTOCOL] protocol analysis and text parsing assistant.
+You are a network protocol expert with deep understanding of [PROTOCOL].
+Your task is to parse a raw seed message sequence that contains both printable ASCII characters and encoded non-ASCII bytes, and extract individual protocol message chunks according to the [PROTOCOL] specification.
 
-The seed messages you will parse have been loaded from files via the 'load_seed_messages' function.
-Within each seed message, printable ASCII characters remain as-is, while non-ASCII bytes have been
-converted into their hex notation (e.g., 0x00, 0x1A, 0xFF, etc.).
-
-Below is the resulting seed message sequence, potentially including both ASCII data and these hex-coded
-non-ASCII bytes. Your task is to split this sequence into individual message chunks according to the
-[PROTOCOL] rules and guidelines.
-
-Seed Message Sequence:
+Seed Message:
 [SEED_MESSAGE]
 
-In your response, you must return a ParsedMessages object that follows the schema below:
+Please adhere to the following instructions:
 
-{
-  "message_sequences": [
-    {
-      "message": <string>
-    },
-    ...
-  ]
-}
+1. **Seed Message Parsing:**
+   - The original message has been preprocessed such that:
+     - All printable ASCII characters remain as-is.
+     - All non-ASCII bytes are represented in `0xHH` hex notation (e.g., 0x00, 0x1A, 0xFF).
+   - Split the input into individual protocol-level messages based on [PROTOCOL] rules, such as:
+     - Header fields
+     - Length indicators
+     - Delimiters (e.g., \\r\\n, null terminators, etc.)
+     - Other message boundary patterns defined in RFCs or official documentation
 
-**Parsing Requirements**:
-1. **Index**: Although not directly stored in the final schema, be mindful that each chunk should
-   conceptually be tracked starting from 0.
-2. **Content**: Include the exact substring of the seed message that corresponds to each parsed chunk,
-   preserving any 0xHH hex notation for non-ASCII characters.
-3. **is_binary**: If a chunk contains or represents non-ASCII data (or mixed ASCII/non-ASCII),
-   set this field to true. Otherwise, set it to false.
-4. **Protocol Rules**: Apply the rules described in [PROTOCOL] to determine how to segment the seed messages.
-   For example, if the protocol specifies special delimiters, length fields, or headers, use them 
-   to find the boundaries of each message chunk.
-5. **Output Format**: Return only the JSON object in the exact schema (no additional commentary or keys).
 
-If the [PROTOCOL] indicates special delimiters, length fields, headers, or other relevant markers,
-use that information to identify message boundaries in the seed message sequence.
+3. **Protocol-Adherent Parsing:**
+   - Follow the message boundary rules defined in the [PROTOCOL] specification.
+   - Use length headers, structural delimiters, or field offsets as applicable.
+   - Do not split binary payloads incorrectly.
+
+4. **Output Only JSON:**
+   - Return only the JSON result. Do not include any additional commentary or explanation.
+
+2. **Output Format:**
+   - Return the result as a JSON object with the following schema:
+     {
+       "message_sequences": [
+         {
+           "message": "<exact substring of the original seed message>"
+         },
+         ...
+       ]
+     }
+   - `message`: Include the original string chunk as-is, preserving any hex-encoded bytes.
+
+5. **Message Indexing:**
+   - Implicitly assume messages are indexed starting from 0 based on their position. Do not include an index in the output.
+
+Parse the following seed message according to the [PROTOCOL] specification, strictly following the instructions.
 """
 
 

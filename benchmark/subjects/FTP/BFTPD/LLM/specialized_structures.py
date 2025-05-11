@@ -9,22 +9,23 @@ from utility.utility import MODEL, LLM_RETRY, LLM_RESULT_DIR
 PROTOCOL_SPECIALIZED_STRUCTURE_OUTPUT_DIR = "protocol_specialized_structure_results"
 
 class StructuredField(BaseModel):
-    name: str         # 필드 이름 (예: "field_name")
-    fixed_byte_length: Optional[int] = None  # 고정 바이트 길이
-    data_type: str    # 데이터 타입 (예: "string", "int", "bytes", "boolean", 등)
-    description: str  # 해당 필드에 대한 간단한 설명
-    details: Optional[str] = None  # 추가 정보 (길이, 인코딩, 제약 조건 등)
+    name: str                                   # Field name (e.g., "field_name")
+    fixed_byte_length: Optional[int] = None     # Fixed byte length
+    data_type: str                              # Data type (e.g., "string", "int", "bytes", "boolean", etc.)
+    description: str                            # Brief description of the field
+    details: Optional[str] = None               # Additional information (length, encoding, constraints, etc.)
 
 class StructuredOutput(BaseModel):
-    protocol: str                   # 프로토콜 이름 ([PROTOCOL])
-    message_type: str                # 메시지 타입 ([TYPE])
-    code: Optional[str] = None      # 메시지 타입 코드 ([CODE])
-    type_description: str            # 메시지 타입 설명 ([DESCRIPTION])
-    fields: List[StructuredField]   # 메시지 구조를 구성하는 필드 리스트
-    reasoning: str                  # 구조 도출 과정 및 사용한 공식 자료에 대한 단계별 설명
+    protocol: str                       # Protocol name ([PROTOCOL])
+    message_type: str                   # Message type ([TYPE])
+    code: Optional[str] = None          # Message type code ([CODE])
+    type_description: str               # Message type description ([DESCRIPTION])
+    fields: List[StructuredField]       # List of fields that make up the message structure
+    reasoning: str                      # Step-by-step explanation of the structure derivation and official sources used
 
 PROTOCOL_SPECIALIZED_STRUCTURE_PROMPT = """\
-You are a network protocol expert with deep understanding of [PROTOCOL]. Your task is to extract the detailed message structure for the client-to-server message type [TYPE] in the [PROTOCOL] protocol.
+You are a network protocol expert with deep understanding of [PROTOCOL].
+Your task is to extract the detailed message structure for the client-to-server message type [TYPE] in the [PROTOCOL] protocol.
 
 This message structure must include:
 - A comprehensive list of all fields (including any common headers, body elements, and subfields) as defined in the official documentation, RFCs, or other recognized authoritative sources.
@@ -139,14 +140,12 @@ def get_specialized_structures(protocol: str, message_types: dict) -> None:
         except Exception as e:
             print(f"Error processing message type {message_type['name']} in {protocol}: {e}")
     
-    # Save the results to a JSON file
     os.makedirs(PROTOCOL_SPECIALIZED_STRUCTURE_OUTPUT_DIR, exist_ok=True)
     file_path = os.path.join(PROTOCOL_SPECIALIZED_STRUCTURE_OUTPUT_DIR, f"{protocol.lower()}_specialized_structures.json")
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(structures, f, indent=4, ensure_ascii=False)    
     print(f"Saved results for {protocol} to {file_path}")
 
-    # Save the prompt and response to a text file
     os.makedirs(LLM_RESULT_DIR, exist_ok=True)
     protocol_file = os.path.join(LLM_RESULT_DIR, f"2_{protocol.lower()}_specialized_structures.json")
     with open(protocol_file, "w", encoding="utf-8") as f:

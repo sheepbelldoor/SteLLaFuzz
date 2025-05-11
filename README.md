@@ -1,6 +1,6 @@
 # SteLLaFuzz
 
-SteLLaFuzz
+SteLLaFuzz is a structure-guided fuzzing framework that leverages large language models (LLMs) to generate protocol-aware seed inputs for testing network protocol implementations. Unlike conventional fuzzers that rely on random mutations or fixed dictionaries, SteLLaFuzz automatically extracts message types, structural formats, and valid sequences from raw seed messages, enabling it to generate semantically valid and structurally diverse inputs. 
 
 ## Folder structure
 ```

@@ -109,12 +109,12 @@ SteLLaFuzz is a **structure-guided LLM-based network-protocol fuzzer**.  By comb
 | Step                       | Command                                                  | Notes                                                                                                                                  |
 | -------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | **1 · Install tooling**    | `./deps.sh`                                              | Installs Docker CE, Python 3, *pandas*, *matplotlib*, and helper scripts.([Docker Documentation][3], [Pandas][4], [matplotlib.org][5]) |
-| **2 · Build images**       | `KEY=<OPENAI_API_KEY> ./setup.sh`                        | Requires an OpenAI API key.([OpenAI 도움말 센터][6])                                                                                        |
+| **2 · Build images**       | `KEY=<OPENAI_API_KEY> ./setup.sh`                        | Requires an OpenAI API key.([OpenAI][6])                                                                                        |
 | **3 · Launch fuzzing run** | `./run.sh <n-containers> <minutes> <subjects> <fuzzers>` | e.g. `./run.sh 1 300 pure-ftpd stellafuzz`.                                                                                            |
 | **4 · Inspect coverage**   | `./analyze.sh <subjects> [minutes]`                      | Produces CSV + PNG reports under `res_<subject>-<timestamp>/`.                                                                         |
 | **5 · Tidy workspace**     | `./clean.sh`                                             | Removes containers and temporary logs.                                                                                                 |
 
-> **Time budget:** full benchmark build (\~20 subjects × 3 fuzzers) ≈ 60 min on an 8-core host.
+> **Time budget:** full benchmark build (\~13 subjects × 3 fuzzers) ≈ 60 minuites.
 
 ---
 

@@ -7,7 +7,6 @@ from LLM.specialized_structures import get_specialized_structures
 from LLM.normal_sequence import get_message_sequences
 from LLM.repeated_sequence import get_repeated_message_sequences
 from LLM.testcases import get_test_cases
-from LLM.structured_seed_message import get_structured_seed_message
 from utility.utility import save_test_cases, load_seed_messages
 
 def main() -> None:
@@ -38,11 +37,10 @@ def main() -> None:
         seed_index = 0
         if seed_messages:
             for seed_message in seed_messages:
-                structured_seed_message = get_structured_seed_message(protocol, seed_message)
-                test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, seed_message)
                 seed_index += 1
                 if repeated_message_sequences:
-                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)
+                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, seed_message)
                     seed_index += 1
         else:
             test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)

@@ -33,10 +33,7 @@ Your task is to generate client-to-server message sequences for the [PROTOCOL] p
 2. **Type Sequence:**  
    [SEQUENCE]
 
-3. **Type Structure:**  
-   [STRUCTURE]
-
-4. **Number of Message Sequences to Generate:**  
+3. **Number of Message Sequences to Generate:**  
    [NUMBER]
 
 Please adhere to the following instructions:
@@ -49,7 +46,6 @@ Please adhere to the following instructions:
    - If additional messages are needed, generate them according to the protocol specification using the preserved valid parameters.
    - For binary-based protocols, represent each message as a sequence of bytes in hex format separated by spaces (e.g., "0x1a 0x0b 0x34 0x00").
    - For text-based protocols, generate the message in plain ASCII text using spaces, newlines, or CRLF as needed according to the protocol specification.
-   - For each message in a sequence, map the message type to its corresponding structure from the type structure and generate realistic, concrete values for each defined field using the valid parameters from seed message.
    - For each message, if is_binary is true, all messages MUST be written in a hex format separated by spaces.
 
    **Example:**  
@@ -97,13 +93,11 @@ Please adhere to the following instructions:
    - Include variations that account for both normal and exceptional conditions in the protocol.
 
 3. **Authoritative and Accurate:**
-   - Base the actual values strictly on the provided type structure.
-   - Use official documentation and RFC details from type structure to ensure correctness.
+   - Use official documentation and RFC details to ensure correctness.
    - Avoid subjective assumptions; rely solely on the provided inputs.
 
 4. **Step-by-Step Reasoning:**
    - In the "explanation" field, include a clear, step-by-step explanation of how the sequences were generated.
-   - Describe the process of mapping each message type in sequence to its corresponding structure in type structure and how actual values were determined.
    - Note any differences in handling text-based versus binary-based protocols.
    - Explain how the valid parameters from seed message were preserved and utilized.
    - Note any differences in handling text-based versus binary-based protocols.
@@ -156,19 +150,10 @@ def using_llm(prompt: str) -> TestCase:
         print(f"Error processing protocol: {e}")
         return None
 
-def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict, seed_message) -> None:
+def get_test_case(protocol: str, type_sequence: List[str], seed_message) -> None:
     sequence = ""
-    structure = ""
-    for i, type in enumerate(type_sequence):
-        sequence += f"{i+1}. {type}\n"
-        structure += f"""\
-{type}\n\
-- Code: {specialized_structure[type]['code']}\n\
-- Description: {specialized_structure[type]['type_description']}\n\
-- Fields: {specialized_structure[type]['fields']}\n\n
-"""
+
     sequence = sequence.strip()
-    structure = structure.strip()
 
     if seed_message:
         seed_message = f"{seed_message}"
@@ -177,7 +162,6 @@ def get_test_case(protocol: str, type_sequence: List[str], specialized_structure
     
     prompt = MESSAGE_PROMPT.replace("[PROTOCOL]", protocol)\
                            .replace("[SEQUENCE]", sequence)\
-                           .replace("[STRUCTURE]", structure)\
                            .replace("[NUMBER]", str(SEQUENCE_REPEAT))\
                            .replace("[SEED_MESSAGE]", seed_message)
 
@@ -188,16 +172,16 @@ def get_test_case(protocol: str, type_sequence: List[str], specialized_structure
             break
 
     if response is None:
-        raise Exception(f"Failed to generate message for {specialized_structure['message_type']} in {protocol}")
+        raise Exception(f"Failed to generate message for {protocol}")
 
     return response.model_dump()
 
-def get_test_cases(protocol: str, message_sequences: dict, specialized_structures: dict, seed_message: str) -> None:
+def get_test_cases(protocol: str, message_sequences: dict, seed_message: str) -> None:
     test_cases = {}
     for sequence in message_sequences["sequences"]:
         try:
             print(f"Processing message sequence: {sequence['sequenceId']}")
-            test_cases[sequence["sequenceId"]] = get_test_case(protocol, sequence["type_sequence"], specialized_structures, seed_message)
+            test_cases[sequence["sequenceId"]] = get_test_case(protocol, sequence["type_sequence"], seed_message)
         except Exception as e:
             print(f"Error processing message sequence {sequence['sequenceId']} in {protocol}: {e}")
     

@@ -3,7 +3,6 @@ import json
 import argparse
 
 from LLM.protocol_types import get_protocol_message_types
-from LLM.specialized_structures import get_specialized_structures
 from LLM.normal_sequence import get_message_sequences
 from LLM.repeated_sequence import get_repeated_message_sequences
 from LLM.testcases import get_test_cases
@@ -27,9 +26,6 @@ def main() -> None:
         # 1. Extract message types
         message_types: dict = get_protocol_message_types(protocol)
 
-        # 2. Extract specialized structure
-        specialized_structures: dict = get_specialized_structures(protocol, message_types)
-
         # 3. Generate message sequences
         message_sequences: dict = get_message_sequences(protocol, message_types)
         repeated_message_sequences: dict = get_repeated_message_sequences(protocol, message_types)
@@ -39,15 +35,15 @@ def main() -> None:
         if seed_messages:
             for seed_message in seed_messages:
                 structured_seed_message = get_structured_seed_message(protocol, seed_message)
-                test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences, structured_seed_message)
                 seed_index += 1
                 if repeated_message_sequences:
-                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)
+                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, structured_seed_message)
                     seed_index += 1
         else:
-            test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)
+            test_cases[0] = get_test_cases(protocol, message_sequences, None)
             if repeated_message_sequences:
-                test_cases[1] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, None)
+                test_cases[1] = get_test_cases(protocol, repeated_message_sequences, None)
 
         # 5. Save results
         for seed_index, test_case in test_cases.items():

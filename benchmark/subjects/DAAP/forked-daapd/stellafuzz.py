@@ -5,7 +5,6 @@ import argparse
 from LLM.protocol_types import get_protocol_message_types
 from LLM.specialized_structures import get_specialized_structures
 from LLM.normal_sequence import get_message_sequences
-from LLM.repeated_sequence import get_repeated_message_sequences
 from LLM.testcases import get_test_cases
 from LLM.structured_seed_message import get_structured_seed_message
 from utility.utility import save_test_cases, load_seed_messages
@@ -32,7 +31,6 @@ def main() -> None:
 
         # 3. Generate message sequences
         message_sequences: dict = get_message_sequences(protocol, message_types)
-        repeated_message_sequences: dict = get_repeated_message_sequences(protocol, message_types)
 
         # 4. Generate test cases
         seed_index = 0
@@ -41,13 +39,8 @@ def main() -> None:
                 structured_seed_message = get_structured_seed_message(protocol, seed_message)
                 test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
                 seed_index += 1
-                if repeated_message_sequences:
-                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)
-                    seed_index += 1
         else:
             test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)
-            if repeated_message_sequences:
-                test_cases[1] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, None)
 
         # 5. Save results
         for seed_index, test_case in test_cases.items():

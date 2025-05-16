@@ -20,10 +20,10 @@ def main() -> None:
     protocol = args.protocol
     output_dir = args.output_dir
     seed_messages_dir = args.seed_messages
-
+    
     try:
-        seed_messages: list[str] = load_seed_messages(seed_messages_dir) if seed_messages_dir else None
-        test_cases = {}
+        result = load_seed_messages(seed_messages_dir) if seed_messages_dir else (None, None)
+        file_names, seed_messages = result
         # 1. Extract message types
         message_types: dict = get_protocol_message_types(protocol)
 
@@ -37,21 +37,23 @@ def main() -> None:
         # 4. Generate test cases
         seed_index = 0
         if seed_messages:
-            for seed_message in seed_messages:
+            test_cases = {}
+            for file_name, seed_message in zip(file_names, seed_messages):
                 structured_seed_message = get_structured_seed_message(protocol, seed_message)
                 test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
                 seed_index += 1
                 if repeated_message_sequences:
                     test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)
                     seed_index += 1
+                for seed_index, test_case in test_cases.items():
+                    save_test_cases(test_case, output_dir, file_name)
         else:
+            test_cases = {}
             test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)
             if repeated_message_sequences:
                 test_cases[1] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, None)
-
-        # 5. Save results
-        for seed_index, test_case in test_cases.items():
-            save_test_cases(test_case, output_dir)
+            for seed_index, test_case in test_cases.items():
+                save_test_cases(test_case, output_dir, "default")
 
     except Exception as e:
         print(f"Error processing protocol {protocol}: {e}")

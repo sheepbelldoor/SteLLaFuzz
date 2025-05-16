@@ -40,7 +40,7 @@ def convert_message_to_binary(message: str) -> bytes:
 
     return bytes(result)
 
-def save_test_cases(test_cases: dict, output_dir: str) -> None:
+def save_test_cases(test_cases: dict, output_dir: str, seed_file_name: str) -> None:
     concatnated_messages = bytearray()
     os.makedirs(output_dir, exist_ok=True)
     
@@ -52,7 +52,7 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
                     concatnated_messages += convert_message_to_binary(message["message"]) + b"\r\n"
 
                 while True:
-                    file_path = os.path.join(output_dir, f"new_{idx}.raw")
+                    file_path = os.path.join(output_dir, f"{seed_file_name.replace('.raw', '')}_new_{idx}.raw")
                     if not os.path.exists(file_path):
                         break
                     idx += 1
@@ -66,9 +66,10 @@ def save_test_cases(test_cases: dict, output_dir: str) -> None:
             
 def load_seed_messages(seed_messages_dir: str) -> List[str]:
     seed_messages = []
+    file_names = []
     for file in os.listdir(seed_messages_dir):
         file_path = os.path.join(seed_messages_dir, file)
-
+        file_names.append(file)
         with open(file_path, "rb") as f:
             binary_content = f.read()
         
@@ -80,5 +81,5 @@ def load_seed_messages(seed_messages_dir: str) -> List[str]:
                readable_content += f" 0x{byte:02x} "
         
         seed_messages.append(readable_content)
-    return seed_messages
+    return file_names, seed_messages
 

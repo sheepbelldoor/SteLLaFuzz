@@ -134,7 +134,7 @@ def using_llm(prompt: str) -> TestCase:
     try:
         completion = client.beta.chat.completions.parse(
             model=MODEL,
-            # temperature=0.3,
+            # temperature=0.7,
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt}
@@ -156,7 +156,7 @@ def using_llm(prompt: str) -> TestCase:
         print(f"Error processing protocol: {e}")
         return None
 
-def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict, seed_message) -> None:
+def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict, seed_message: str) -> None:
     sequence = ""
     structure = ""
     for i, type in enumerate(type_sequence):

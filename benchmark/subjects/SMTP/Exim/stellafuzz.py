@@ -26,12 +26,21 @@ def main() -> None:
         file_names, seed_messages = result
         # 1. Extract message types
         message_types: dict = get_protocol_message_types(protocol)
+        # message_types_file = os.path.join(f"llm_outputs/1_{protocol.lower()}_types.json")
+        # with open(message_types_file, "r", encoding="utf-8") as f:
+        #     message_types = json.load(f)
 
         # 2. Extract specialized structure
         specialized_structures: dict = get_specialized_structures(protocol, message_types)
-
+        # specialized_structures_file = os.path.join(f"llm_outputs/2_{protocol.lower()}_specialized_structures.json")
+        # with open(specialized_structures_file, "r", encoding="utf-8") as f:
+        #     specialized_structures = json.load(f)
+        
         # 3. Generate message sequences
-        message_sequences: dict = get_message_sequences(protocol, message_types)
+        message_sequences = {}
+        message_sequences[1] = get_message_sequences(protocol, message_types, 1)
+        message_sequences[3] = get_message_sequences(protocol, message_types, 3)
+        message_sequences[5] = get_message_sequences(protocol, message_types, 5)
         repeated_message_sequences: dict = get_repeated_message_sequences(protocol, message_types)
 
         # 4. Generate test cases
@@ -40,7 +49,11 @@ def main() -> None:
             test_cases = {}
             for file_name, seed_message in zip(file_names, seed_messages):
                 structured_seed_message = get_structured_seed_message(protocol, seed_message)
-                test_cases[seed_index] = get_test_cases(protocol, message_sequences, specialized_structures, structured_seed_message)
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences[1], specialized_structures, structured_seed_message)
+                seed_index += 1
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences[3], specialized_structures, structured_seed_message)
+                seed_index += 1
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences[5], specialized_structures, structured_seed_message)
                 seed_index += 1
                 if repeated_message_sequences:
                     test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)

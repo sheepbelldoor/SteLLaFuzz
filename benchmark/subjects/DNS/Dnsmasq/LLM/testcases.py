@@ -134,9 +134,9 @@ def using_llm(prompt: str) -> TestCase:
     try:
         completion = client.beta.chat.completions.parse(
             model=MODEL,
-            # temperature=0.7,
+            temperature=0.2,
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are a network protocol expert with deep understanding of [PROTOCOL]."},
                 {"role": "user", "content": prompt}
             ],
             response_format=TestCase,

@@ -82,7 +82,7 @@ def using_llm(prompt: str) -> ProtocolSequences:
             model=MODEL,
             temperature=0.7,
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are a network protocol expert with deep understanding of [PROTOCOL]."},
                 {"role": "user", "content": prompt}
             ],
             response_format=ProtocolSequences,
@@ -120,6 +120,28 @@ def get_repeated_message_sequences(protocol: str, message_types: dict) -> dict:
     if response is None:
         raise Exception(f"Failed to generate repeated message sequence for {protocol}")
 
+    # Filter out sequences that don't have any repeated message types
+    filtered_sequences = []
+    for sequence in response.sequences:
+        # Check if the sequence has any repeated message types
+        message_counts = {}
+        has_repetition = False
+        
+        for msg_type in sequence.type_sequence:
+            message_counts[msg_type] = message_counts.get(msg_type, 0) + 1
+            if message_counts[msg_type] > 1:
+                has_repetition = True
+                break
+                
+        if has_repetition:
+            filtered_sequences.append(sequence)
+    
+    # Update the response with only sequences that have repetitions
+    if filtered_sequences:
+        response.sequences = filtered_sequences
+    else:
+        print(f"Warning: No sequences with repeated message types found for {protocol}")
+    
     # Save the results to a JSON file
     os.makedirs(MESSAGE_SEQUENCE_OUTPUT_DIR, exist_ok=True)
     file_path = os.path.join(MESSAGE_SEQUENCE_OUTPUT_DIR, f"{protocol.lower()}_repeated_message_sequences.json")

@@ -52,7 +52,7 @@ def save_test_cases(test_cases: dict, output_dir: str, seed_file_name: str) -> N
                     concatnated_messages += convert_message_to_binary(message["message"]) + b"\r\n"
 
                 while True:
-                    file_path = os.path.join(output_dir, f"{seed_file_name.replace('.raw', '')}_new_{idx}.raw")
+                    file_path = os.path.join(output_dir, f"new_{idx}.raw")
                     if not os.path.exists(file_path):
                         break
                     idx += 1

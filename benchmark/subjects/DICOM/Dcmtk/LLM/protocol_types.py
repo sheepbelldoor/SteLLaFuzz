@@ -93,7 +93,7 @@ def using_llm(prompt: str) -> ProtocolMessageTypes:
             model=MODEL,
             temperature=0.1,
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are a network protocol expert with deep understanding of [PROTOCOL]."},
                 {"role": "user", "content": prompt}
             ],
             response_format=ProtocolMessageTypes,

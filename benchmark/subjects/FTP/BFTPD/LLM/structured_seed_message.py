@@ -67,7 +67,7 @@ def using_llm(prompt: str) -> ParsedMessages:
         completion = client.beta.chat.completions.parse(
             model=MODEL,
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are a network protocol expert with deep understanding of [PROTOCOL]."},
                 {"role": "user", "content": prompt}
             ],
             response_format=ParsedMessages,

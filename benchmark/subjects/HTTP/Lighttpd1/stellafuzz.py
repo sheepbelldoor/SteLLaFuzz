@@ -41,7 +41,7 @@ def main() -> None:
         message_sequences[1] = get_message_sequences(protocol, message_types, 1)
         message_sequences[3] = get_message_sequences(protocol, message_types, 3)
         message_sequences[5] = get_message_sequences(protocol, message_types, 5)
-        repeated_message_sequences: dict = get_repeated_message_sequences(protocol, message_types)
+        # repeated_message_sequences: dict = get_repeated_message_sequences(protocol, message_types)
 
         # 4. Generate test cases
         seed_index = 0
@@ -55,16 +55,16 @@ def main() -> None:
                 seed_index += 1
                 test_cases[seed_index] = get_test_cases(protocol, message_sequences[5], specialized_structures, structured_seed_message)
                 seed_index += 1
-                if repeated_message_sequences:
-                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)
-                    seed_index += 1
+                # if repeated_message_sequences:
+                #     test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)
+                #     seed_index += 1
                 for seed_index, test_case in test_cases.items():
                     save_test_cases(test_case, output_dir, file_name)
         else:
             test_cases = {}
             test_cases[0] = get_test_cases(protocol, message_sequences, specialized_structures, None)
-            if repeated_message_sequences:
-                test_cases[1] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, None)
+            # if repeated_message_sequences:
+            #     test_cases[1] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, None)
             for seed_index, test_case in test_cases.items():
                 save_test_cases(test_case, output_dir, "default")
 

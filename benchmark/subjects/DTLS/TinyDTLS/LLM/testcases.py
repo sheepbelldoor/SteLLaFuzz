@@ -33,10 +33,7 @@ Your task is to generate client-to-server message sequences for the [PROTOCOL] p
 2. **Type Sequence:**  
    [SEQUENCE]
 
-3. **Type Structure:**  
-   [STRUCTURE]
-
-4. **Number of Message Sequences to Generate:**  
+3. **Number of Message Sequences to Generate:**  
    [NUMBER]
 
 Please adhere to the following instructions:
@@ -159,14 +156,14 @@ def using_llm(prompt: str) -> TestCase:
 def get_test_case(protocol: str, type_sequence: List[str], specialized_structure: dict, seed_message: str) -> None:
     sequence = ""
     structure = ""
-    for i, type in enumerate(type_sequence):
-        sequence += f"{i+1}. {type}\n"
-        structure += f"""\
-{type}\n\
-- Code: {specialized_structure[type]['code']}\n\
-- Description: {specialized_structure[type]['type_description']}\n\
-- Fields: {specialized_structure[type]['fields']}\n\n
-"""
+#     for i, type in enumerate(type_sequence):
+#         sequence += f"{i+1}. {type}\n"
+#         structure += f"""\
+# {type}\n\
+# - Code: {specialized_structure[type]['code']}\n\
+# - Description: {specialized_structure[type]['type_description']}\n\
+# - Fields: {specialized_structure[type]['fields']}\n\n
+# """
     sequence = sequence.strip()
     structure = structure.strip()
 
@@ -177,7 +174,6 @@ def get_test_case(protocol: str, type_sequence: List[str], specialized_structure
     
     prompt = MESSAGE_PROMPT.replace("[PROTOCOL]", protocol)\
                            .replace("[SEQUENCE]", sequence)\
-                           .replace("[STRUCTURE]", structure)\
                            .replace("[NUMBER]", str(SEQUENCE_REPEAT))\
                            .replace("[SEED_MESSAGE]", seed_message)
 
@@ -188,7 +184,7 @@ def get_test_case(protocol: str, type_sequence: List[str], specialized_structure
             break
 
     if response is None:
-        raise Exception(f"Failed to generate message for {specialized_structure['message_type']} in {protocol}")
+        raise Exception(f"Failed to generate message for {protocol}")
 
     return response.model_dump()
 

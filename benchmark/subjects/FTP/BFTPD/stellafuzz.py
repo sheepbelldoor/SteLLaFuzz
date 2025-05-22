@@ -48,15 +48,15 @@ def main() -> None:
         if seed_messages:
             test_cases = {}
             for file_name, seed_message in zip(file_names, seed_messages):
-                structured_seed_message = get_structured_seed_message(protocol, seed_message)
-                test_cases[seed_index] = get_test_cases(protocol, message_sequences[1], specialized_structures, structured_seed_message)
+                # structured_seed_message = get_structured_seed_message(protocol, seed_message)
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences[1], specialized_structures, seed_message)
                 seed_index += 1
-                test_cases[seed_index] = get_test_cases(protocol, message_sequences[3], specialized_structures, structured_seed_message)
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences[3], specialized_structures, seed_message)
                 seed_index += 1
-                test_cases[seed_index] = get_test_cases(protocol, message_sequences[5], specialized_structures, structured_seed_message)
+                test_cases[seed_index] = get_test_cases(protocol, message_sequences[5], specialized_structures, seed_message)
                 seed_index += 1
                 if repeated_message_sequences:
-                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, structured_seed_message)
+                    test_cases[seed_index] = get_test_cases(protocol, repeated_message_sequences, specialized_structures, seed_message)
                     seed_index += 1
                 for seed_index, test_case in test_cases.items():
                     save_test_cases(test_case, output_dir, file_name)

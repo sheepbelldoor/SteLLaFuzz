@@ -26,15 +26,9 @@ def main() -> None:
         file_names, seed_messages = result
         # 1. Extract message types
         message_types: dict = get_protocol_message_types(protocol)
-        # message_types_file = os.path.join(f"llm_outputs/1_{protocol.lower()}_types.json")
-        # with open(message_types_file, "r", encoding="utf-8") as f:
-        #     message_types = json.load(f)
 
         # 2. Extract specialized structure
         specialized_structures: dict = get_specialized_structures(protocol, message_types)
-        # specialized_structures_file = os.path.join(f"llm_outputs/2_{protocol.lower()}_specialized_structures.json")
-        # with open(specialized_structures_file, "r", encoding="utf-8") as f:
-        #     specialized_structures = json.load(f)
         
         # 3. Generate message sequences
         message_sequences = {}
